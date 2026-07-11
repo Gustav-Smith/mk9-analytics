@@ -13,12 +13,62 @@ enum UserRole {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String
-  role      UserRole @default(SUPERVISOR)
+  id       String   @id @default(cuid())
+  name     String
+  email    String   @unique
+  password String
+  role     UserRole @default(SUPERVISOR)
 
   createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Supervisor {
+  id    String  @id @default(cuid())
+  name  String
+  email String? @unique
+
+  promoters Promoter[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Promoter {
+  id    String  @id @default(cuid())
+  name  String
+  city  String?
+  state String?
+
+  supervisorId String
+  supervisor   Supervisor @relation(fields: [supervisorId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Industry {
+  id   String @id @default(cuid())
+  code String @unique
+  name String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Store {
+  id   String @id @default(cuid())
+  code String @unique
+
+  name String
+
+  chain String?
+
+  city String?
+
+  state String?
+
+  createdAt DateTime @default(now())
+
   updatedAt DateTime @updatedAt
 }
