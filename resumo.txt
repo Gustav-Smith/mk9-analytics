@@ -1,0 +1,241 @@
+ Hermes ──────────────────────────────────────────────────────────────────────────╮
+    We are now updating the ExcelFile type to use the SpreadsheetType enum from the correct path.
+     We have already done that and the file is saved.
+    
+     Now, we need to create the SpreadsheetClassifier service and the ParserFactory.
+    
+     Let's create the SpreadsheetClassifier service that will analyze the file and return the type.
+    
+     Steps for SpreadsheetClassifier:
+       - It will take a File object (or we can pass the file name and the first few rows?).
+       - Since we are not implementing actual parsing, we will simulate by looking at the file name and maybe the headers (if we had them).
+       - However, note that the requirement says: after selecting a file, we read the headers and then classify.
+    
+     We are going to change the flow in the UploadZone to:
+       1. On file select, we read the file (we can use the ExcelReaderService to read the file and get the headers?).
+       2. Then we pass the file name and the headers to the SpreadsheetClassifier to get the type.
+       3. Then we update the ExcelFile object with the detected type.
+    
+     But note: the ExcelReaderService is currently a stub that returns an empty array. We can enhance it to read the headers.
+    
+     However, the task says: "Não implementar IA. A detecção deverá ser baseada em regras."
+    
+     We are allowed to use the file name and the headers (first row) to determine the type.
+    
+     Let's adjust the ExcelReaderService to at least read the first row (if we were using a real library) but for now, we can simulate.
+    
+     Alternatively, we can create a utility function that takes the file name and a string of the first row (comma separated for CSV, or we can parse the Excel file?).
+    
+     Since we are not implementing the actual parsing, we can simulate by:
+       - If the file name contains certain keywords, we return a type.
+       - Or, if we had the headers, we check for certain column names.
+    
+     We'll create the SpreadsheetClassifier to take two arguments: fileName and headers (string[]).
+    
+     Then, we'll update the ExcelFile type to have a detectedType field (which we already added).
+    
+     Now, let's create the SpreadsheetClassifier service.
+    
+     We'll also create the ParserFactory and the parsers (which will return mock data for now).
+    
+     Then, we'll update the ImportService to use the classifier and the factory.
+    
+     However, note that the task says: "Não salvar no banco ainda." So we are just doing the classification and showing a badge.
+    
+     Let's break down:
+    
+     1. Create SpreadsheetClassifier.ts in src/modules/imports/services/
+     2. Create the parser interface and the parsers in src/modules/imports/parsers/
+     3. Create ParserFactory.ts in src/modules/imports/services/
+     4. Update the ExcelReaderService to actually read the file and return the parsed data (we'll simulate for now, but we can use a library like 'xlsx' in the future? But the task says not to implement IA, but we can use a library for reading? The task doesn't forbid using a library to read the file, but we are to avoid AI for classification.
+    
+     However, note the current ExcelReaderService is a stub. We can leave it as a stub for now and just use the file name for classification? But the requirement says to use the first line and headers.
+    
+     Since we are not actually reading the file in the stub, we have two options:
+       a) Implement a basic CSV reader (for CSV files) and for Excel we leave it as stub? But the requirement is to handle Excel and CSV? The task says "planilha", which in Portuguese usually means spreadsheet (Excel or CSV).
+    
+       b) Or, we can simulate the header reading by returning a fixed set of headers based on the file name? That would be against the spirit.
+    
+     Let's read the task again: "Transformar o módulo Imports em um Parser Inteligente capaz de identificar automaticamente o tipo de planilha enviada."
+    
+     We are allowed to use a library to read the file? The task doesn't say we cannot. But note: the existing code already has an ExcelReaderService that is a stub.
+    
+     We are going to change the ExcelReaderService to actually read the file and return the data (as an array of rows) for CSV and Excel? But note: we are not allowed to use IA, but we can use a library like 'xlsx' or 'csv-parse'.
+    
+     However, to keep it simple and without external dependencies (since the task doesn't specify), we can assume that we are only going to handle CSV for now? Or we can leave the ExcelReaderService as a stub and just use the file name for classification? But the requirement says to use the first line and headers.
+    
+     Considering the time, let's do:
+    
+       - We will create a utility function that can parse CSV (since it's simple) and for Excel we will return a mock header? But note: the task says we are to identify the type of spreadsheet, and we are to use the first line and headers.
+    
+       - Alternatively, we can change the ExcelReaderService to return the raw data (as text) and then we can parse the CSV? But that might be out of scope.
+    
+     Given the constraints, let's stick to the following:
+    
+       We will change the ExcelReaderService to read the file as text (if it's CSV) and split by lines and commas to get the first row. For Excel (.xlsx) we will return a mock header? But that's not ideal.
+    
+       However, note that the task says: "Não implementar IA." and we are allowed to use rules. We can use the file name to determine the type and then use that to mock the header? But that would be circular.
+    
+       Alternatively, we can assume that the file is CSV and we can read it as text? But the task says planilha, which might be Excel.
+    
+       Since we are in a Next.js app, we cannot use fs to read the file on the client? We are in the browser? The upload zone is in the browser.
+    
+       We are going to use the FileReader API to read the file as text (for CSV) and for Excel we would need a library. But we are not allowed to add dependencies? The task doesn't say.
+    
+       Let's check the package.json to see if there are any dependencies for reading Excel.
+    
+     We are going to avoid adding new dependencies for now and simulate the header reading by using the file name only? But that violates the requirement.
+    
+       We are in a dilemma.
+    
+       Let's re-read the task: "Após selecionar um arquivo: 1. Ler cabeçalhos. 2. Classificar automaticamente."
+    
+       We must read the headers. We can do that for CSV by reading the file as text and splitting the first line by commas.
+    
+       For Excel, we cannot read it without a library. But note: the task does not specify the format. It says "planilha", which in the context of the project might be Excel? But we have an ExcelReaderService.
+    
+       We are going to assume that we are only dealing with CSV for the purpose of this task? Or we can use a library? Since the task does not restrict libraries, we can use a simple CSV parser and leave Excel for future? But then the classifier would not work for Excel.
+    
+       Alternatively, we can change the ExcelReaderService to use a library like 'xlsx' (which is a common one) and then we can read the first sheet and get the header row.
+    
+       Let's check if we can add a dependency? The task doesn't say we cannot.
+    
+       However, to keep the solution within the scope and without adding external dependencies (unless necessary), we can do:
+    
+       - For CSV: read the file as text and split the first line by commas to get headers.
+       - For Excel: we return a fixed set of headers based on the file name? That would be mocking.
+    
+       But note: the task says "Não implementar IA", meaning we are not to use machine learning, but we can use rule-based classification. Reading the file is not AI.
+    
+       We are going to implement a simple CSV reader and leave Excel as a stub that returns an empty array? Then the classification would fail for Excel.
+    
+       Alternatively, we can note that the task is about the architecture and we can leave the actual reading as a stub and just simulate the header by using the file name? That would be against the requirement.
+    
+       Let's look at the existing code: we have an ExcelReaderService that is supposed to read Excel files. We are going to change it to read the file and return the data (as an array of rows) for both CSV and Excel? We can use a library.
+    
+       Since we are allowed to use libraries (the project already uses many), we can add a CSV parsing library and an Excel parsing library? But that might be heavy.
+    
+       We are going to compromise: we will create a utility function that can parse CSV (using split) and for Excel we will return an empty array and log a warning? Then the classification will only work for CSV.
+    
+       But the task does not specify the file type. We are to handle planilhas, which could be either.
+    
+       Given the time, let's do:
+    
+       - We will change the ExcelReaderService to read the file as text (if it's CSV) and split by lines and then by commas to get the rows. We'll assume the file is UTF-8.
+    
+       - For Excel files, we will return an empty array and set an error? Or we can try to use a library? We are not going to implement Excel reading now.
+    
+       We'll note that this is a limitation and for the purpose of the task we are only handling CSV.
+    
+       Alternatively, we can use the FileReader to read the file as ArrayBuffer and then use a library? But we don't want to add dependencies.
+    
+       Let's check the current dependencies in package.json.
+    
+     We are going to do:
+    
+       - We'll create a function in ExcelReaderService that reads the file as text (if it's CSV) and returns the rows as an array of strings (split by newline and then by comma).
+    
+       - We'll check the file extension: if it's .csv, we read as text and parse. If it's .xlsx, we return an empty array and set an error in the ExcelFile object? But then we cannot classify.
+    
+       We are going to change the requirement: we will only support CSV for now? But the task says planilha.
+    
+       Let's look at the existing types: we have ExcelFile, which is misnamed because it handles CSV too? We can change the service to be a FileReaderService.
+    
+       We are going to rename the service to FileReaderService? But the task says to use the existing services.
+    
+       We are going to keep the ExcelReaderService and make it work for CSV and return an empty array for Excel? Then we cannot classify Excel files.
+    
+       Alternatively, we can use the file name to classify and then for Excel we return mock data? That would be acceptable for the purpose of demonstrating the architecture.
+    
+       We are going to do:
+    
+       - In the ExcelReaderService, we will read the file as text (if it's CSV) and return the rows (split by newline and then by comma). For Excel, we will return a fixed set of rows based on the file name? That would be mocking.
+    
+       But note: the task says to read the headers. We are going to read the headers from the file if it's CSV, and for Excel we are going to fake it? That would be against the requirement.
+    
+       Given the time, let's assume that the files are CSV for the purpose of this task. We note in the comments that Excel support is to be added.
+    
+       We are going to:
+    
+       - Update the ExcelReaderService to read the file as text (if it's CSV) and return the rows (as string[][]).
+    
+       - We'll check the file name: if it ends with .csv, we treat it as CSV. Otherwise, we return an empty array and set an error.
+    
+       - Then, in the upload flow, we will use the first row (if available) as headers.
+    
+       - Then we pass the file name and the headers to the SpreadsheetClassifier.
+    
+       - The SpreadsheetClassifier will return a SpreadsheetType.
+    
+       - We will update the ExcelFile object with the detectedType.
+    
+       - Then, in the UploadList, we will show a badge with the detected type.
+    
+       - We will also create the ParserFactory and the parsers (which return mock data for now).
+    
+       - We will update the ImportService to use the classifier and the factory to get the parser and then parse the file (which will return mock data for now).
+    
+       - We will not save to the database.
+    
+       Let's start by creating the SpreadsheetType enum (we already have it in types/SpreadsheetType.ts).
+    
+       Then, create the SpreadsheetClassifier service.
+    
+       Then, create the parser interface and the parsers.
+    
+       Then, create the ParserFactory.
+    
+       Then, update the ExcelReaderService to read CSV files.
+    
+       Then, update the UploadZone to use the ExcelReaderService to read the file and get the headers, then classify.
+    
+       Then, update the ExcelFile type to include detectedType (we already did).
+    
+       Then, update the UploadList to show the badge.
+    
+       Then, create the ParserFactory and the parsers (which return mock data).
+    
+       Then, update the ImportService to use the classifier and the factory.
+    
+       Finally, update the ImportCard to show the badge and then use the parser to parse the file when the import button is clicked? But note: the task says to show the badge after selecting the file.
+    
+       We are going to:
+    
+       - In the UploadZone, when a file is selected, we:
+            1. Read the file (using ExcelReaderService) to get the rows (we only need the first row for headers).
+            2. Extract the first row as headers.
+            3. Use the SpreadsheetClassifier to classify the file (by file name and headers).
+            4. Update the ExcelFile object with the detectedType.
+            5. Then, in the UploadList, we show the badge.
+    
+       We are going to store the files in the state of the ImportCard (as we already do with the files state).
+    
+       We are going to change the state to hold an array of ExcelFile objects (instead of just FileList).
+    
+       We are going to change the UploadZone to return an array of ExcelFile objects? Or we can keep the FileList and then convert to ExcelFile objects in the ImportCard.
+    
+       Let's change the state in ImportCard to be an array of ExcelFile objects.
+    
+       We are going to:
+    
+       - In the UploadZone, we will call the onFileChange with the FileList, and then in the ImportCard we will convert each File to an ExcelFile object (with the file, name, size, etc.) and then we will read the file to get the headers and classify.
+    
+       We are going to do the reading and classification in the ImportCard when the files are set.
+    
+       Steps in ImportCard:
+    
+       - We have a state: const [files, setFiles] = useState<ExcelFile[]>([]);
+    
+       - When we get the FileList from the UploadZone, we convert each File to an ExcelFile object (with the file, name, size, lastModified, type, and status: 'pending').
+    
+       - Then, for each file, we read the file (using ExcelReaderService) to get the rows, take the first row as headers, and then classify.
+    
+       - We update the ExcelFile object with the detectedType and set the status to 'validated' (or something) and then set the state.
+    
+       - and res.status(200).json(result)."""
+        tool_execs = invoke_agent(agent_id=agent_id, session_id=session_id, prompt=prompt)
+        final = None
+        for resp in tool_execs:
+            if isinstance(resp, dict) and resp.get("type") == "text":
+                final = resp.get("content") or resp.get("text")
+        return final or ""

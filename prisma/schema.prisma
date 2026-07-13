@@ -86,16 +86,50 @@ enum VisitStatus {
 }
 
 model Visit {
-  id         String      @id @default(cuid())
-  promoterId String
-  promoter   Promoter    @relation(fields: [promoterId], references: [id])
-  storeId    String
-  store      Store       @relation(fields: [storeId], references: [id])
-  industryId String
-  industry   Industry    @relation(fields: [industryId], references: [id])
-  status     VisitStatus @default(PLANEJADA)
-  scheduledDate DateTime
-  completedDate DateTime?
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id             String      @id @default(cuid())
+
+  operationId    String
+  operation      Operation   @relation(fields: [operationId], references: [id])
+
+  promoterId     String
+  promoter       Promoter    @relation(fields: [promoterId], references: [id])
+
+  storeId        String
+  store          Store       @relation(fields: [storeId], references: [id])
+
+  industryId     String
+  industry       Industry    @relation(fields: [industryId], references: [id])
+
+  status         VisitStatus @default(PLANEJADA)
+
+  scheduledDate  DateTime
+  completedDate  DateTime?
+
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+enum OperationStatus {
+  OPEN
+  CLOSED
+  ARCHIVED
+}
+
+model Operation {
+  id        String   @id @default(cuid())
+  name      String
+  month     Int
+  year      Int
+
+  status    OperationStatus @default(OPEN)
+
+  startsAt  DateTime
+  endsAt    DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  visits Visit[]
+
+  @@unique([month, year])
 }
