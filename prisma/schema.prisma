@@ -63,17 +63,12 @@ model Industry {
 model Store {
   id   String @id @default(cuid())
   code String @unique
-
   name String
-
   chain String?
-
   city String?
-
   state String?
 
   createdAt DateTime @default(now())
-
   updatedAt DateTime @updatedAt
 
   visits Visit[]
@@ -132,4 +127,32 @@ model Operation {
   visits Visit[]
 
   @@unique([month, year])
+}
+
+model Import {
+  id        String   @id @default(cuid())
+  status    String   // e.g., PENDING, SUCCESS, FAILED
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  files ImportFile[]
+}
+
+model ImportFile {
+  id        String   @id @default(cuid())
+  fileName  String
+  fileHash  String   @unique
+  rowCount  Int?
+  importId  String
+  import    Import   @relation(fields: [importId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model SyncLog {
+  id        String   @id @default(cuid())
+  action    String   // e.g., COMPARE_MONTHS, DUPLICATE_DETECTION, DATABASE_REBUILD
+  status    String   // e.g., INFO, WARNING, ERROR
+  message   String
+  details   Json?    // additional metadata
+  createdAt DateTime @default(now())
 }

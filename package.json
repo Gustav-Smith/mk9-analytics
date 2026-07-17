@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "db:migrate": "npx prisma migrate dev",
+    "db:generate": "npx prisma generate",
+    "db:studio": "npx prisma studio",
+    "db:seed": "npx prisma db seed"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
@@ -38,7 +42,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.10",
+    "eslint-next": "16.2.10",
     "shadcn": "^4.13.0",
     "tailwindcss": "^4",
     "tsx": "^4.23.0",
