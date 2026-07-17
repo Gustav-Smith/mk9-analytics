@@ -1,0 +1,33 @@
+architecture
+    graph TD
+        subgraph Presentation Layer
+            A[Next.js Pages] --> B[Reusable UI Components]
+        end
+
+        subgraph Application Layer
+            C[API Routes] --> D[Application Services]
+        end
+
+        subgraph Domain Layer
+            E[Prisma Schema] --> F[TypeScript Types]
+            E --> G[Zod Schemas]
+        end
+
+        subgraph Infrastructure Layer
+            H[Shared Utilities] --> I[Repository Implementations]
+            I --> J[Prisma Client]
+            J --> K[(PostgreSQL)]
+            L[External Services] --> I
+        end
+
+        A --> D
+        D --> E
+        E --> I
+        I --> K
+        K --> I
+        I --> E
+        E --> F
+        E --> G
+        F --> B
+        G --> C
+        L --> D
