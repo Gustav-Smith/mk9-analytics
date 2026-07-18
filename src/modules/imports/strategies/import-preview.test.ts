@@ -1,0 +1,91 @@
+import assert from 'node:assert/strict';
+import test from 'node:test';
+import * as XLSX from 'xlsx';
+import { CsvStrategy } from './CsvStrategy';
+import { ExcelStrategy } from './ExcelStrategy';
+import { SpreadsheetType } from '../types/SpreadsheetType';
+import type { ImportStrategy } from '../types/ImportStrategy';
+
+function createWorkbook(rows: unknown[][]): ArrayBuffer {
+  const workbook = XLSX.utils.book_new();
+  const worksheet = XLSX.utils.aoa_to_sheet(rows);
+  XLSX.utils.book_append_sheet(workbook, worksheet, 'Dados');
+  return XLSX.write(workbook, { bookType: 'xlsx', type: 'array' }) as ArrayBuffer;
+}
+
+async function createPreview(strategy: ImportStrategy, data: ArrayBuffer) {
+  const rawData = await strategy.parse(data);
+  const detectedType = await strategy.detectType(rawData);
+  const normalizedData = await strategy.normalize(rawData);
+  const { valid, errors } = await strategy.validate(normalizedData);
+  const { unique, duplicates } = await strategy.detectDuplicates(valid);
+  const preview = await strategy.generatePreview(unique, duplicates, errors.length);
+
+  return { rawData, detectedType, normalizedData, valid, errors, preview };
+}
+
+test('XLSX com cabeçalho na primeira linha', async () => {
+  const result = await createPreview(new ExcelStrategy(), createWorkbook([
+    ['NOME', 'CIDADE', 'ESTADO', 'SUPERVISOR'],
+    ['Ana', 'Brasília', 'DF', 'Carlos'],
+    [],
+  ]));
+
+  assert.equal(result.detectedType, SpreadsheetType.PROMOTORES);
+  assert.equal(result.valid.length, 1);
+  assert.equal(result.errors.length, 0);
+  assert.deepEqual(Object.keys(result.normalizedData[0]), ['NOME', 'CIDADE', 'ESTADO', 'SUPERVISOR']);
+});
+
+test('XLSX com linhas de título antes do cabeçalho ignora linhas vazias', async () => {
+  const result = await createPreview(new ExcelStrategy(), createWorkbook([
+    ['Relatório mensal'],
+    [],
+    ['NOME', 'CIDADE', 'ESTADO', 'SUPERVISOR'],
+    ['Ana', 'Brasília', 'DF', 'Carlos'],
+    [],
+  ]));
+
+  assert.equal(result.valid.length, 1);
+  assert.equal(result.errors.length, 0);
+  assert.equal(result.normalizedData[0].NOME, 'Ana');
+});
+
+test('CSV válido continua gerando preview', async () => {
+  const csv = new TextEncoder().encode('NOME,CIDADE,ESTADO,SUPERVISOR\nAna,Brasilia,DF,Carlos\n').buffer;
+  const result = await createPreview(new CsvStrategy(), csv);
+
+  assert.equal(result.detectedType, SpreadsheetType.PROMOTORES);
+  assert.equal(result.valid.length, 1);
+  assert.equal(result.preview.previewData.length, 1);
+});
+
+test('linha incompleta é preservada pela validação existente', async () => {
+  const result = await createPreview(new ExcelStrategy(), createWorkbook([
+    ['NOME', 'CIDADE', 'ESTADO', 'SUPERVISOR'],
+    ['Ana', 'Brasília', 'DF'],
+  ]));
+
+  assert.equal(result.valid.length, 1);
+  assert.equal(result.errors.length, 0);
+  assert.equal(result.normalizedData[0].SUPERVISOR, undefined);
+});
+
+test('colunas não reconhecidas retornam tipo desconhecido sem derrubar o preview', async () => {
+  const result = await createPreview(new ExcelStrategy(), createWorkbook([
+    ['CAMPO A', 'CAMPO B'],
+    ['valor A', 'valor B'],
+  ]));
+
+  assert.equal(result.detectedType, SpreadsheetType.DESCONHECIDO);
+  assert.equal(result.valid.length, 1);
+  assert.deepEqual(Object.keys(result.normalizedData[0]), ['CAMPO_A', 'CAMPO_B']);
+});
+
+test('arquivo XLSX vazio não produz linhas', async () => {
+  const result = await createPreview(new ExcelStrategy(), createWorkbook([]));
+
+  assert.equal(result.rawData.length, 0);
+  assert.equal(result.valid.length, 0);
+  assert.equal(result.preview.previewData.length, 0);
+});
