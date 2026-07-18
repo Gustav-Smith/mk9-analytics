@@ -132,7 +132,7 @@ export class OperationPlanner {
                 industryId: industry.id,
                 scheduledDate: visitDate,
                 status: 'PLANEJADA' as VisitStatus,
-                completedDate: undefined // Explicitly set undefined for optional field
+                completedDate: null
               };
 
               visitsToCreate.push(visit);
@@ -215,8 +215,8 @@ export class OperationPlanner {
    */
   private isSameDate(date1: Date, date2: Date): boolean {
     return date1.getFullYear() === date2.getFullYear() &&
-           date1.getMonth() === date2.getMonth() &&
-           date1.getDate() === date2.getDate();
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate();
   }
 }
 
