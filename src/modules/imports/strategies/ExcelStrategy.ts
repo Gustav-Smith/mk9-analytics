@@ -6,6 +6,46 @@ import type { ImportValidationError, NormalizedImportRow } from '../types/Import
 import type { StrategyPreview } from '../types/ImportStrategy';
 
 export class ExcelStrategy implements ImportStrategy {
+  private isFilled(value: unknown): boolean {
+    return value !== null && value !== undefined && String(value).trim() !== '';
+  }
+
+  private findHeaderRowIndex(data: unknown[]): number {
+    const rowsToInspect = data.slice(0, 25);
+    let headerRowIndex = 0;
+    let highestFilledCellCount = 0;
+
+    rowsToInspect.forEach((row, index) => {
+      if (!Array.isArray(row)) return;
+
+      const filledCellCount = row.filter((value) => this.isFilled(value)).length;
+      if (filledCellCount > highestFilledCellCount) {
+        headerRowIndex = index;
+        highestFilledCellCount = filledCellCount;
+      }
+    });
+
+    return headerRowIndex;
+  }
+
+  private normalizeHeaders(headerRow: unknown[]): string[] {
+    const occurrences = new Map<string, number>();
+
+    return headerRow.map((header, index) => {
+      const normalized = String(header ?? '')
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .replace(/[^A-Z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, '') || `COLUNA_${index + 1}`;
+      const occurrence = (occurrences.get(normalized) ?? 0) + 1;
+      occurrences.set(normalized, occurrence);
+
+      return occurrence === 1 ? normalized : `${normalized}_${occurrence}`;
+    });
+  }
+
   async detectOrigin(): Promise<string> {
     return 'local-file';
   }
@@ -15,7 +55,9 @@ export class ExcelStrategy implements ImportStrategy {
       return SpreadsheetType.DESCONHECIDO;
     }
 
-    const headers = data[0] as string[];
+    const headerRowIndex = this.findHeaderRowIndex(data);
+    const headerRow = Array.isArray(data[headerRowIndex]) ? data[headerRowIndex] : [];
+    const headers = this.normalizeHeaders(headerRow);
     const headerString = headers.join(' ').toUpperCase();
 
     const typeKeywords: Record<SpreadsheetType, string[]> = {
@@ -52,8 +94,12 @@ export class ExcelStrategy implements ImportStrategy {
       return [];
     }
 
-    const headers = (rawData[0] as unknown[]).map((header) => String(header ?? ''));
-    const dataRows = rawData.slice(1) as unknown[][];
+    const headerRowIndex = this.findHeaderRowIndex(rawData);
+    const headerRow = Array.isArray(rawData[headerRowIndex]) ? rawData[headerRowIndex] : [];
+    const headers = this.normalizeHeaders(headerRow);
+    const dataRows = rawData
+      .slice(headerRowIndex + 1)
+      .filter((row): row is unknown[] => Array.isArray(row) && row.some((value) => this.isFilled(value)));
 
     return dataRows.map((row) => {
       const obj: NormalizedImportRow = {};

@@ -1,0 +1,78 @@
+warning: in the working copy of 'src/modules/imports/strategies/ExcelStrategy.ts', LF will be replaced by CRLF the next time Git touches it
+[1mdiff --git a/src/modules/imports/strategies/ExcelStrategy.ts b/src/modules/imports/strategies/ExcelStrategy.ts[m
+[1mindex a33b518..e7e759a 100644[m
+[1m--- a/src/modules/imports/strategies/ExcelStrategy.ts[m
+[1m+++ b/src/modules/imports/strategies/ExcelStrategy.ts[m
+[36m@@ -6,6 +6,46 @@[m [mimport type { ImportValidationError, NormalizedImportRow } from '../types/Import[m
+ import type { StrategyPreview } from '../types/ImportStrategy';[m
+ [m
+ export class ExcelStrategy implements ImportStrategy {[m
+[32m+[m[32m  private isFilled(value: unknown): boolean {[m
+[32m+[m[32m    return value !== null && value !== undefined && String(value).trim() !== '';[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  private findHeaderRowIndex(data: unknown[]): number {[m
+[32m+[m[32m    const rowsToInspect = data.slice(0, 25);[m
+[32m+[m[32m    let headerRowIndex = 0;[m
+[32m+[m[32m    let highestFilledCellCount = 0;[m
+[32m+[m
+[32m+[m[32m    rowsToInspect.forEach((row, index) => {[m
+[32m+[m[32m      if (!Array.isArray(row)) return;[m
+[32m+[m
+[32m+[m[32m      const filledCellCount = row.filter((value) => this.isFilled(value)).length;[m
+[32m+[m[32m      if (filledCellCount > highestFilledCellCount) {[m
+[32m+[m[32m        headerRowIndex = index;[m
+[32m+[m[32m        highestFilledCellCount = filledCellCount;[m
+[32m+[m[32m      }[m
+[32m+[m[32m    });[m
+[32m+[m
+[32m+[m[32m    return headerRowIndex;[m
+[32m+[m[32m  }[m
+[32m+[m
+[32m+[m[32m  private normalizeHeaders(headerRow: unknown[]): string[] {[m
+[32m+[m[32m    const occurrences = new Map<string, number>();[m
+[32m+[m
+[32m+[m[32m    return headerRow.map((header, index) => {[m
+[32m+[m[32m      const normalized = String(header ?? '')[m
+[32m+[m[32m        .trim()[m
+[32m+[m[32m        .normalize('NFD')[m
+[32m+[m[32m        .replace(/[\u0300-\u036f]/g, '')[m
+[32m+[m[32m        .toUpperCase()[m
+[32m+[m[32m        .replace(/[^A-Z0-9]+/g, '_')[m
+[32m+[m[32m        .replace(/^_+|_+$/g, '') || `COLUNA_${index + 1}`;[m
+[32m+[m[32m      const occurrence = (occurrences.get(normalized) ?? 0) + 1;[m
+[32m+[m[32m      occurrences.set(normalized, occurrence);[m
+[32m+[m
+[32m+[m[32m      return occurrence === 1 ? normalized : `${normalized}_${occurrence}`;[m
+[32m+[m[32m    });[m
+[32m+[m[32m  }[m
+[32m+[m
+   async detectOrigin(): Promise<string> {[m
+     return 'local-file';[m
+   }[m
+[36m@@ -15,7 +55,9 @@[m [mexport class ExcelStrategy implements ImportStrategy {[m
+       return SpreadsheetType.DESCONHECIDO;[m
+     }[m
+ [m
+[31m-    const headers = data[0] as string[];[m
+[32m+[m[32m    const headerRowIndex = this.findHeaderRowIndex(data);[m
+[32m+[m[32m    const headerRow = Array.isArray(data[headerRowIndex]) ? data[headerRowIndex] : [];[m
+[32m+[m[32m    const headers = this.normalizeHeaders(headerRow);[m
+     const headerString = headers.join(' ').toUpperCase();[m
+ [m
+     const typeKeywords: Record<SpreadsheetType, string[]> = {[m
+[36m@@ -52,8 +94,12 @@[m [mexport class ExcelStrategy implements ImportStrategy {[m
+       return [];[m
+     }[m
+ [m
+[31m-    const headers = (rawData[0] as unknown[]).map((header) => String(header ?? ''));[m
+[31m-    const dataRows = rawData.slice(1) as unknown[][];[m
+[32m+[m[32m    const headerRowIndex = this.findHeaderRowIndex(rawData);[m
+[32m+[m[32m    const headerRow = Array.isArray(rawData[headerRowIndex]) ? rawData[headerRowIndex] : [];[m
+[32m+[m[32m    const headers = this.normalizeHeaders(headerRow);[m
+[32m+[m[32m    const dataRows = rawData[m
+[32m+[m[32m      .slice(headerRowIndex + 1)[m
+[32m+[m[32m      .filter((row): row is unknown[] => Array.isArray(row) && row.some((value) => this.isFilled(value)));[m
+ [m
+     return dataRows.map((row) => {[m
+       const obj: NormalizedImportRow = {};[m
