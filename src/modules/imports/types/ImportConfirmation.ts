@@ -32,7 +32,7 @@ export type ImportConfirmationErrorCode =
   | 'INVALID_PREVIEW_TOKEN'
   | 'PREVIEW_NOT_FOUND'
   | 'PREVIEW_EXPIRED'
-  | 'PREVIEW_ALREADY_USED'
+  | 'PREVIEW_ALREADY_CONSUMED'
   | 'IDEMPOTENCY_CONFLICT';
 
 export interface ImportConfirmationErrorResponse {

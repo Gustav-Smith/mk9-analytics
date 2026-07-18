@@ -101,6 +101,7 @@ model Import {
   updatedAt        DateTime                @updatedAt
   files            ImportFile[]
   previewArtifacts ImportPreviewArtifact[]
+  confirmations    ImportConfirmation[]
 }
 
 model ImportFile {
@@ -126,9 +127,25 @@ model ImportPreviewArtifact {
   consumedAt   DateTime?
   createdAt    DateTime  @default(now())
   import       Import    @relation(fields: [importId], references: [id], onDelete: Cascade)
+  confirmation ImportConfirmation?
 
   @@index([importId])
   @@index([expiresAt])
+}
+
+model ImportConfirmation {
+  id                String                @id @default(cuid())
+  importId          String
+  previewArtifactId String                @unique
+  idempotencyKey    String                @unique
+  acceptedRows      Int
+  rejectedRows      Int
+  confirmedAt       DateTime              @default(now())
+  createdAt         DateTime              @default(now())
+  import            Import                @relation(fields: [importId], references: [id], onDelete: Cascade)
+  previewArtifact   ImportPreviewArtifact @relation(fields: [previewArtifactId], references: [id], onDelete: Restrict)
+
+  @@index([importId])
 }
 
 model SyncLog {

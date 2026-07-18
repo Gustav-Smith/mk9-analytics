@@ -1,9 +1,10 @@
 import assert from 'node:assert/strict';
+import { randomBytes } from 'node:crypto';
 import test from 'node:test';
 import { ImportConfirmationPayloadSchema } from './ImportConfirmation';
 
 const validPayload = {
-  previewToken: '7bYx_DjWQ9zBvE8KL0fMb2uT4SrP6nHcXaG1eZiA5Qo',
+  previewToken: randomBytes(32).toString('base64url'),
   idempotencyKey: '550e8400-e29b-41d4-a716-446655440000',
 };
 
