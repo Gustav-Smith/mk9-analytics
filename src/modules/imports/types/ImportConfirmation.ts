@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import type { ImportFileMetadata } from './ImportPreview';
-import type { SpreadsheetType } from './SpreadsheetType';
 
 export const ImportConfirmationPayloadSchema = z.object({
   previewToken: z.string()
@@ -43,27 +41,19 @@ export interface ImportConfirmationErrorResponse {
   error: string;
 }
 
-export type PreviewConfirmationState = 'PENDING' | 'CONFIRMED' | 'EXPIRED';
-
 /**
- * Server-side record required before a confirmation endpoint can be implemented.
- * It is a contract only; no persistence mechanism is defined here.
+ * Persisted preview record available to a future confirmation endpoint.
  */
 export interface ServerPreviewRecord {
   previewId: string;
   importId: string;
   tokenHash: string;
-  file: ImportFileMetadata & { hash: string };
-  detectedType: SpreadsheetType;
-  normalizedDataDigest: string;
-  normalizedDataReference: string;
-  totalRows: number;
-  validRows: number;
-  invalidRows: number;
+  fileHash: string;
+  dataDigest: string;
+  payload: unknown;
+  acceptedRows: number;
+  rejectedRows: number;
   createdAt: string;
   expiresAt: string;
-  state: PreviewConfirmationState;
-  confirmationId?: string;
-  confirmedAt?: string;
-  idempotencyKey?: string;
+  consumedAt?: string;
 }

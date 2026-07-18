@@ -95,11 +95,12 @@ model Operation {
 }
 
 model Import {
-  id        String       @id @default(cuid())
-  status    String
-  createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
-  files     ImportFile[]
+  id               String                  @id @default(cuid())
+  status           String
+  createdAt        DateTime                @default(now())
+  updatedAt        DateTime                @updatedAt
+  files            ImportFile[]
+  previewArtifacts ImportPreviewArtifact[]
 }
 
 model ImportFile {
@@ -110,6 +111,24 @@ model ImportFile {
   importId  String
   createdAt DateTime @default(now())
   import    Import   @relation(fields: [importId], references: [id])
+}
+
+model ImportPreviewArtifact {
+  id           String    @id @default(cuid())
+  importId     String
+  tokenHash    String    @unique
+  fileHash     String
+  dataDigest   String
+  payload      Json
+  acceptedRows Int
+  rejectedRows Int
+  expiresAt    DateTime
+  consumedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  import       Import    @relation(fields: [importId], references: [id], onDelete: Cascade)
+
+  @@index([importId])
+  @@index([expiresAt])
 }
 
 model SyncLog {

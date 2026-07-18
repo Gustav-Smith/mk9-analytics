@@ -4,6 +4,7 @@ import { ExcelStrategy } from '../strategies/ExcelStrategy';
 import { CsvStrategy } from '../strategies/CsvStrategy';
 import { SpreadsheetType } from '../types/SpreadsheetType';
 import type { ImportPreview, NormalizedImportRow } from '../types/ImportPreview';
+import { buildPreviewArtifact, createPreviewDescriptor } from './ImportPreviewArtifactService';
 
 export type PreviewResult = ImportPreview;
 
@@ -92,23 +93,47 @@ export class ImportService {
         warnings.push(`${invalidRows} linha(s) inválida(s) não foram incluídas na amostra.`);
       }
 
-      // Update the import record with progress (still processing)
-      await prisma.import.update({
-        where: { id: importRecord.id },
-        data: {
-          status: 'PROCESSING',
-        },
+      if (unique.length === 0) {
+        throw new InvalidImportFileError('O arquivo não possui linhas válidas para confirmação.');
+      }
+
+      const fileMetadata = {
+        name: file.name,
+        size: file.size,
+        type: file.type || 'application/octet-stream',
+      };
+      const artifact = buildPreviewArtifact({
+        importId: importRecord.id,
+        file: fileMetadata,
+        fileBytes: arrayBuffer,
+        detectedType,
+        sheets,
+        columns,
+        confirmableRows: unique,
+        totalRows: normalizedData.length,
+        validRows: valid.length,
+        invalidRows,
+        duplicateRows: duplicates.length,
+        errors,
+        warnings,
+      });
+      const descriptor = createPreviewDescriptor(artifact);
+
+      await prisma.$transaction(async (transaction) => {
+        await transaction.importPreviewArtifact.create({ data: artifact.data });
+        await transaction.import.update({
+          where: { id: importRecord.id },
+          data: { status: 'PROCESSING' },
+        });
       });
 
       // Return the preview result
       return {
         success: true,
         importId: importRecord.id,
-        file: {
-          name: file.name,
-          size: file.size,
-          type: file.type || 'application/octet-stream',
-        },
+        previewToken: descriptor.previewToken,
+        expiresAt: descriptor.expiresAt,
+        file: fileMetadata,
         sheets,
         detectedType,
         columns,

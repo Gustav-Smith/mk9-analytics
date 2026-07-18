@@ -23,6 +23,8 @@ export interface ImportFileMetadata {
 export interface ImportPreview {
   success: true;
   importId: string;
+  previewToken: string;
+  expiresAt: string;
   file: ImportFileMetadata;
   sheets: string[];
   detectedType: SpreadsheetType;
