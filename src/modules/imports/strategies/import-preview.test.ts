@@ -89,3 +89,58 @@ test('arquivo XLSX vazio não produz linhas', async () => {
   assert.equal(result.valid.length, 0);
   assert.equal(result.preview.previewData.length, 0);
 });
+
+const ROUTE_HEADERS = ['INDUSTRIA', 'LOJA', 'UF', 'VISITA_SEMANAL', 'VISITA_MENSAL', 'SUPERVISOR', 'PROMOTOR'];
+
+async function validateRouteRow(row: unknown[]) {
+  return createPreview(new ExcelStrategy(), createWorkbook([ROUTE_HEADERS, row]));
+}
+
+test('linha de roteiro completa é válida', async () => {
+  const result = await validateRouteRow(['Indústria A', 'Loja A', 'DF', 1, null, 'Supervisor A', 'Promotor A']);
+  assert.equal(result.valid.length, 1);
+  assert.equal(result.errors.length, 0);
+});
+
+test('linha de roteiro sem INDUSTRIA é inválida', async () => {
+  const result = await validateRouteRow([null, 'Loja A', 'DF', 1]);
+  assert.equal(result.valid.length, 0);
+  assert.equal(result.errors[0].field, 'INDUSTRIA');
+  assert.match(result.errors[0].message, /obrigatório/);
+});
+
+test('linha de roteiro sem LOJA é inválida', async () => {
+  const result = await validateRouteRow(['Indústria A', null, 'DF', 1]);
+  assert.equal(result.valid.length, 0);
+  assert.equal(result.errors[0].field, 'LOJA');
+});
+
+test('linha de roteiro sem UF é inválida', async () => {
+  const result = await validateRouteRow(['Indústria A', 'Loja A', null, 1]);
+  assert.equal(result.valid.length, 0);
+  assert.equal(result.errors[0].field, 'UF');
+});
+
+test('linha de roteiro sem SUPERVISOR continua válida', async () => {
+  const result = await validateRouteRow(['Indústria A', 'Loja A', 'DF', 1, null, null, 'Promotor A']);
+  assert.equal(result.valid.length, 1);
+  assert.equal(result.errors.length, 0);
+});
+
+test('linha de roteiro sem PROMOTOR continua válida', async () => {
+  const result = await validateRouteRow(['Indústria A', 'Loja A', 'DF', 1, null, 'Supervisor A']);
+  assert.equal(result.valid.length, 1);
+  assert.equal(result.errors.length, 0);
+});
+
+test('linha de roteiro sem frequência é inválida quando as colunas existem', async () => {
+  const result = await validateRouteRow(['Indústria A', 'Loja A', 'DF']);
+  assert.equal(result.valid.length, 0);
+  assert.equal(result.errors[0].field, 'VISITA_SEMANAL|VISITA_MENSAL');
+});
+
+test('linha vazia de roteiro continua ignorada', async () => {
+  const result = await createPreview(new ExcelStrategy(), createWorkbook([ROUTE_HEADERS, ['Indústria A', 'Loja A', 'DF', 1], []]));
+  assert.equal(result.normalizedData.length, 1);
+  assert.equal(result.valid.length, 1);
+});

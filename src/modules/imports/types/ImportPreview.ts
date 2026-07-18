@@ -5,6 +5,7 @@ export type NormalizedImportRow = Record<string, unknown>;
 
 export interface ImportValidationError {
   row: number;
+  field: string;
   message: string;
   data?: NormalizedImportRow;
 }

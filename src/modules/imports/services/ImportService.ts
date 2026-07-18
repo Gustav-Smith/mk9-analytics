@@ -70,12 +70,13 @@ export class ImportService {
 
       // Validate the normalized data
       const { valid, errors } = await strategy.validate(normalizedData);
+      const invalidRows = new Set(errors.map((error) => error.row)).size;
 
       // Detect duplicates in the valid data
       const { unique, duplicates } = await strategy.detectDuplicates(valid);
 
       // Generate preview data
-      const preview = await strategy.generatePreview(unique, duplicates, errors.length);
+      const preview = await strategy.generatePreview(unique, duplicates, invalidRows);
       const sample = preview.previewData.slice(0, 50);
       const columns = normalizedData[0] ? Object.keys(normalizedData[0]) : [];
       const sheets = strategy.getSheetNames ? await strategy.getSheetNames(arrayBuffer) : [];
@@ -87,8 +88,8 @@ export class ImportService {
       if (duplicates.length > 0) {
         warnings.push(`${duplicates.length} linha(s) duplicada(s) foram removidas da amostra.`);
       }
-      if (errors.length > 0) {
-        warnings.push(`${errors.length} linha(s) inválida(s) não foram incluídas na amostra.`);
+      if (invalidRows > 0) {
+        warnings.push(`${invalidRows} linha(s) inválida(s) não foram incluídas na amostra.`);
       }
 
       // Update the import record with progress (still processing)
@@ -113,7 +114,7 @@ export class ImportService {
         columns,
         totalRows: normalizedData.length,
         validRows: valid.length,
-        invalidRows: errors.length,
+        invalidRows,
         duplicateRows: duplicates.length,
         sample,
         previewData: sample,

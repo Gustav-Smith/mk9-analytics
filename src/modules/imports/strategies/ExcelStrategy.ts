@@ -4,6 +4,7 @@ import { ImportStrategy } from '../types/ImportStrategy';
 import { ExcelReaderService } from '../services/ExcelReaderService';
 import type { ImportValidationError, NormalizedImportRow } from '../types/ImportPreview';
 import type { StrategyPreview } from '../types/ImportStrategy';
+import { validatePreviewRows } from '../services/validate-preview-rows';
 
 export class ExcelStrategy implements ImportStrategy {
   private isFilled(value: unknown): boolean {
@@ -111,18 +112,7 @@ export class ExcelStrategy implements ImportStrategy {
   }
 
   async validate(normalizedData: NormalizedImportRow[]): Promise<{ valid: NormalizedImportRow[]; errors: ImportValidationError[] }> {
-    const valid: NormalizedImportRow[] = [];
-    const errors: ImportValidationError[] = [];
-
-    for (const [index, data] of normalizedData.entries()) {
-      if (data && typeof data === 'object' && Object.keys(data).length > 0) {
-        valid.push(data);
-      } else {
-        errors.push({ row: index + 2, data, message: 'A linha não contém dados válidos.' });
-      }
-    }
-
-    return { valid, errors };
+    return validatePreviewRows(normalizedData);
   }
 
   async detectDuplicates(validData: NormalizedImportRow[]): Promise<{ unique: NormalizedImportRow[]; duplicates: NormalizedImportRow[] }> {
