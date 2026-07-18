@@ -160,7 +160,7 @@ export const operationService = {
   async closeOperation(id: string) {
     return prisma.operation.update({
       where: { id },
-      data: { status: OperationStatus.CLOSED },
+      data: { status: OperationStatus.FINISHED },
     });
   },
 

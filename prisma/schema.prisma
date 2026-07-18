@@ -7,135 +7,99 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum UserRole {
-  ADMIN
-  SUPERVISOR
-}
-
 model User {
-  id       String   @id @default(cuid())
-  name     String
-  email    String   @unique
-  password String
-  role     UserRole @default(SUPERVISOR)
-
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(SUPERVISOR)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Supervisor {
-  id    String  @id @default(cuid())
-  name  String
-  email String? @unique
-
+  id        String     @id @default(cuid())
+  name      String
+  email     String?    @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
   promoters Promoter[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 }
 
 model Promoter {
-  id    String  @id @default(cuid())
-  name  String
-  city  String?
-  state String?
-
+  id           String     @id @default(cuid())
+  name         String
+  city         String?
+  state        String?
   supervisorId String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   supervisor   Supervisor @relation(fields: [supervisorId], references: [id])
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  visits Visit[]
+  visits       Visit[]
 }
 
 model Industry {
-  id   String @id @default(cuid())
-  code String @unique
-  name String
-
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  visits Visit[]
+  visits    Visit[]
 }
 
 model Store {
-  id   String @id @default(cuid())
-  code String @unique
-  name String
-  chain String?
-  city String?
-  state String?
-
+  id        String   @id @default(cuid())
+  code      String   @unique
+  name      String
+  chain     String?
+  city      String?
+  state     String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  visits Visit[]
-}
-
-enum VisitStatus {
-  PLANEJADA
-  REALIZADA
-  CANCELADA
+  visits    Visit[]
 }
 
 model Visit {
-  id             String      @id @default(cuid())
-
-  operationId    String
-  operation      Operation   @relation(fields: [operationId], references: [id])
-
-  promoterId     String
-  promoter       Promoter    @relation(fields: [promoterId], references: [id])
-
-  storeId        String
-  store          Store       @relation(fields: [storeId], references: [id])
-
-  industryId     String
-  industry       Industry    @relation(fields: [industryId], references: [id])
-
-  status         VisitStatus @default(PLANEJADA)
-
-  scheduledDate  DateTime
-  completedDate  DateTime?
-
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-}
-
-enum OperationStatus {
-  OPEN
-  CLOSED
-  ARCHIVED
+  id            String      @id @default(cuid())
+  promoterId    String
+  storeId       String
+  industryId    String
+  status        VisitStatus @default(PLANEJADA)
+  scheduledDate DateTime
+  completedDate DateTime?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  operationId   String
+  industry      Industry    @relation(fields: [industryId], references: [id])
+  operation     Operation   @relation(fields: [operationId], references: [id])
+  promoter      Promoter    @relation(fields: [promoterId], references: [id])
+  store         Store       @relation(fields: [storeId], references: [id])
 }
 
 model Operation {
-  id        String   @id @default(cuid())
-  name      String
-  month     Int
-  year      Int
-  status    OperationStatus @default(OPEN)
-  description String?
-  clientId  String?
+  id           String          @id @default(cuid())
+  name         String
+  month        Int
+  year         Int
+  status       OperationStatus @default(PLANNING)
+  startsAt     DateTime
+  endsAt       DateTime
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  clientId     String?
+  description  String?
   observations String?
-  startsAt  DateTime
-  endsAt    DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  visits Visit[]
+  visits       Visit[]
 
   @@unique([month, year])
 }
 
 model Import {
-  id        String   @id @default(cuid())
-  status    String   // e.g., PENDING, SUCCESS, FAILED
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  files ImportFile[]
+  id        String       @id @default(cuid())
+  status    String
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  files     ImportFile[]
 }
 
 model ImportFile {
@@ -144,15 +108,35 @@ model ImportFile {
   fileHash  String   @unique
   rowCount  Int?
   importId  String
-  import    Import   @relation(fields: [importId], references: [id])
   createdAt DateTime @default(now())
+  import    Import   @relation(fields: [importId], references: [id])
 }
 
 model SyncLog {
   id        String   @id @default(cuid())
-  action    String   // e.g., COMPARE_MONTHS, DUPLICATE_DETECTION, DATABASE_REBUILD
-  status    String   // e.g., INFO, WARNING, ERROR
+  action    String
+  status    String
   message   String
-  details   Json?    // additional metadata
+  details   Json?
   createdAt DateTime @default(now())
+}
+
+enum UserRole {
+  ADMIN
+  SUPERVISOR
+}
+
+enum VisitStatus {
+  PLANEJADA
+  REALIZADA
+  CANCELADA
+}
+
+enum OperationStatus {
+  PLANNING
+  OPEN
+  IN_PROGRESS
+  FINISHED
+  CANCELLED
+  ARCHIVED
 }

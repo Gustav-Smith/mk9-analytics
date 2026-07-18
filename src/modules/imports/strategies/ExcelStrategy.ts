@@ -2,6 +2,8 @@ import { prisma } from '../../../lib/prisma';
 import { SpreadsheetType } from '../types/SpreadsheetType';
 import { ImportStrategy } from '../types/ImportStrategy';
 import { ExcelReaderService } from '../services/ExcelReaderService';
+import type { ImportValidationError, NormalizedImportRow } from '../types/ImportPreview';
+import type { StrategyPreview } from '../types/ImportStrategy';
 
 export class ExcelStrategy implements ImportStrategy {
   async detectOrigin(): Promise<string> {
@@ -41,16 +43,20 @@ export class ExcelStrategy implements ImportStrategy {
     return await ExcelReaderService.readFileFromBuffer(Buffer.from(data));
   }
 
-  async normalize(rawData: unknown[]): Promise<any[]> {
+  async getSheetNames(data: ArrayBuffer): Promise<string[]> {
+    return ExcelReaderService.getSheetNamesFromBuffer(Buffer.from(data));
+  }
+
+  async normalize(rawData: unknown[]): Promise<NormalizedImportRow[]> {
     if (!rawData || rawData.length === 0) {
       return [];
     }
 
-    const headers = rawData[0] as string[];
+    const headers = (rawData[0] as unknown[]).map((header) => String(header ?? ''));
     const dataRows = rawData.slice(1) as unknown[][];
 
     return dataRows.map((row) => {
-      const obj: any = {};
+      const obj: NormalizedImportRow = {};
       headers.forEach((header, index) => {
         obj[header] = row[index];
       });
@@ -58,25 +64,25 @@ export class ExcelStrategy implements ImportStrategy {
     });
   }
 
-  async validate(normalizedData: any[]): Promise<{ valid: any[]; errors: any[] }> {
-    const valid: any[] = [];
-    const errors: any[] = [];
+  async validate(normalizedData: NormalizedImportRow[]): Promise<{ valid: NormalizedImportRow[]; errors: ImportValidationError[] }> {
+    const valid: NormalizedImportRow[] = [];
+    const errors: ImportValidationError[] = [];
 
-    for (const data of normalizedData) {
+    for (const [index, data] of normalizedData.entries()) {
       if (data && typeof data === 'object' && Object.keys(data).length > 0) {
         valid.push(data);
       } else {
-        errors.push({ data, error: 'Invalid row' });
+        errors.push({ row: index + 2, data, message: 'A linha não contém dados válidos.' });
       }
     }
 
     return { valid, errors };
   }
 
-  async detectDuplicates(validData: any[]): Promise<{ unique: any[]; duplicates: any[] }> {
+  async detectDuplicates(validData: NormalizedImportRow[]): Promise<{ unique: NormalizedImportRow[]; duplicates: NormalizedImportRow[] }> {
     const seen = new Set<string>();
-    const unique: any[] = [];
-    const duplicates: any[] = [];
+    const unique: NormalizedImportRow[] = [];
+    const duplicates: NormalizedImportRow[] = [];
 
     for (const data of validData) {
       const key = JSON.stringify(data);
@@ -91,22 +97,22 @@ export class ExcelStrategy implements ImportStrategy {
     return { unique, duplicates };
   }
 
-  async generatePreview(uniqueData: any[], duplicates: any[]): Promise<any> {
+  async generatePreview(uniqueData: NormalizedImportRow[], duplicates: NormalizedImportRow[], invalidRows = 0): Promise<StrategyPreview> {
     return {
       totalRows: uniqueData.length + duplicates.length,
       validRows: uniqueData.length,
-      invalidRows: 0,
+      invalidRows,
       duplicateRows: duplicates.length,
       previewData: uniqueData.slice(0, 10),
     };
   }
 
-  async persist(uniqueData: any[]): Promise<void> {
+  async persist(uniqueData: NormalizedImportRow[]): Promise<void> {
     console.log(`Would persist ${uniqueData.length} records to database`);
     // Actual implementation would use Prisma to create records based on spreadsheet type
   }
 
-  async logHistory(importId: string, fileName: string, size: number, result: any): Promise<void> {
+  async logHistory(importId: string, fileName: string, size: number, result: StrategyPreview): Promise<void> {
     await prisma.importFile.create({
       data: {
         fileName,

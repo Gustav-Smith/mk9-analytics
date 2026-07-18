@@ -46,7 +46,7 @@ export default async function DashboardPage() {
             <p><strong>Status:</strong> 
               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                 ${dashboardData.currentOperation.status === 'OPEN' ? 'bg-green-100 text-green-800' : 
-                  dashboardData.currentOperation.status === 'CLOSED' ? 'bg-yellow-100 text-yellow-800' : 
+                  dashboardData.currentOperation.status === 'FINISHED' ? 'bg-yellow-100 text-yellow-800' : 
                   dashboardData.currentOperation.status === 'ARCHIVED' ? 'bg-blue-100 text-blue-800' : 
                   'bg-gray-100 text-gray-800'}`}>
                 {dashboardData.currentOperation.status}

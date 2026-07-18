@@ -1,12 +1,17 @@
 import * as XLSX from 'xlsx';
 
 export class ExcelReaderService {
+  static getSheetNamesFromBuffer(buffer: Buffer): string[] {
+    const workbook = XLSX.read(buffer, { type: 'buffer' });
+    return workbook.SheetNames;
+  }
+
   /**
    * Reads an Excel file from a Buffer (server-side)
    * @param buffer - The file content as a Buffer
    * @returns Promise resolving to the parsed data as an array of rows (each row is an array of cell values)
    */
-  static async readFileFromBuffer(buffer: Buffer): Promise<any[]> {
+  static async readFileFromBuffer(buffer: Buffer): Promise<unknown[]> {
     return new Promise((resolve, reject) => {
       try {
         const workbook = XLSX.read(buffer, { type: 'buffer' });
@@ -25,7 +30,7 @@ export class ExcelReaderService {
    * @param file - The file object
    * @returns Promise resolving to the parsed data as an array of rows
    */
-  static async readFileFromFile(file: File): Promise<any[]> {
+  static async readFileFromFile(file: File): Promise<unknown[]> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = (e) => {

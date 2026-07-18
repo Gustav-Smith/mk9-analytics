@@ -1,20 +1,14 @@
 import { prisma } from '../../../lib/prisma';
-import { SpreadsheetType } from '../types/SpreadsheetType';
 import { ImportStrategy } from '../types/ImportStrategy';
-import { ExcelReaderService } from './ExcelReaderService';
-import { parseCsv } from '../parsers/csvParser';
+import { ExcelStrategy } from '../strategies/ExcelStrategy';
+import { CsvStrategy } from '../strategies/CsvStrategy';
+import { SpreadsheetType } from '../types/SpreadsheetType';
+import type { ImportPreview, NormalizedImportRow } from '../types/ImportPreview';
 
-// Define the preview result type
-export interface PreviewResult {
-  importId: string;
-  totalRows: number;
-  validRows: number;
-  invalidRows: number;
-  duplicateRows: number;
-  previewData: any[];
-  uniqueData: any[];
-  duplicates: any[];
-}
+export type PreviewResult = ImportPreview;
+
+export class UnsupportedImportFileError extends Error {}
+export class InvalidImportFileError extends Error {}
 
 // Define the import result type
 export interface ImportResult {
@@ -22,6 +16,10 @@ export interface ImportResult {
   importId: string;
   message: string;
   rowsImported: number;
+}
+
+interface PersistablePreviewResult extends PreviewResult {
+  uniqueData: NormalizedImportRow[];
 }
 
 export class ImportService {
@@ -42,20 +40,33 @@ export class ImportService {
     });
 
     try {
-      // Read the file as ArrayBuffer
-      const arrayBuffer = await this.readFileAsArrayBuffer(file);
+      const arrayBuffer = await file.arrayBuffer();
 
       // Determine the strategy based on file extension
       const strategy = this.getStrategyForFile(file.name);
 
-      // Detect origin (for file upload, it's always 'local-file')
-      const origin = await strategy.detectOrigin();
+      await strategy.detectOrigin();
 
       // Parse the file to get raw data
-      const rawData = await strategy.parse(arrayBuffer);
+      let rawData: unknown[];
+      try {
+        rawData = await strategy.parse(arrayBuffer);
+      } catch {
+        throw new InvalidImportFileError('Não foi possível ler o arquivo. Verifique se ele não está corrompido.');
+      }
+
+      if (rawData.length === 0) {
+        throw new InvalidImportFileError('O arquivo não contém linhas para visualizar.');
+      }
+
+      const detectedType = await strategy.detectType(rawData);
 
       // Normalize the raw data
       const normalizedData = await strategy.normalize(rawData);
+
+      if (normalizedData.length === 0) {
+        throw new InvalidImportFileError('O arquivo contém cabeçalhos, mas nenhuma linha de dados.');
+      }
 
       // Validate the normalized data
       const { valid, errors } = await strategy.validate(normalizedData);
@@ -64,7 +75,21 @@ export class ImportService {
       const { unique, duplicates } = await strategy.detectDuplicates(valid);
 
       // Generate preview data
-      const preview = await strategy.generatePreview(unique, duplicates);
+      const preview = await strategy.generatePreview(unique, duplicates, errors.length);
+      const sample = preview.previewData.slice(0, 50);
+      const columns = normalizedData[0] ? Object.keys(normalizedData[0]) : [];
+      const sheets = strategy.getSheetNames ? await strategy.getSheetNames(arrayBuffer) : [];
+      const warnings: string[] = [];
+
+      if (detectedType === SpreadsheetType.DESCONHECIDO) {
+        warnings.push('O tipo da planilha não foi reconhecido pelos cabeçalhos encontrados.');
+      }
+      if (duplicates.length > 0) {
+        warnings.push(`${duplicates.length} linha(s) duplicada(s) foram removidas da amostra.`);
+      }
+      if (errors.length > 0) {
+        warnings.push(`${errors.length} linha(s) inválida(s) não foram incluídas na amostra.`);
+      }
 
       // Update the import record with progress (still processing)
       await prisma.import.update({
@@ -76,14 +101,24 @@ export class ImportService {
 
       // Return the preview result
       return {
+        success: true,
         importId: importRecord.id,
-        totalRows: preview.totalRows || 0,
-        validRows: preview.validRows || 0,
-        invalidRows: preview.invalidRows || 0,
-        duplicateRows: preview.duplicateRows || 0,
-        previewData: preview.previewData || [],
-        uniqueData: unique,
-        duplicates: duplicates,
+        file: {
+          name: file.name,
+          size: file.size,
+          type: file.type || 'application/octet-stream',
+        },
+        sheets,
+        detectedType,
+        columns,
+        totalRows: normalizedData.length,
+        validRows: valid.length,
+        invalidRows: errors.length,
+        duplicateRows: duplicates.length,
+        sample,
+        previewData: sample,
+        errors,
+        warnings,
       };
     } catch (error) {
       // Update the import record to failed state
@@ -105,7 +140,7 @@ export class ImportService {
    * @param previewResult - The result from processFileForPreview
    * @returns A promise that resolves to the import result
    */
-  async importFile(file: File, previewResult: PreviewResult): Promise<ImportResult> {
+  async importFile(file: File, previewResult: PersistablePreviewResult): Promise<ImportResult> {
     try {
       // Get the strategy based on file extension
       const strategy = this.getStrategyForFile(file.name);
@@ -131,6 +166,7 @@ export class ImportService {
           validRows: previewResult.validRows,
           invalidRows: previewResult.invalidRows,
           duplicateRows: previewResult.duplicateRows,
+          previewData: previewResult.previewData,
         }
       );
 
@@ -158,23 +194,6 @@ export class ImportService {
    * @param file - The file to read
    * @returns A promise that resolves to the file's contents as an ArrayBuffer
    */
-  private readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onload = () => {
-        if (reader.result instanceof ArrayBuffer) {
-          resolve(reader.result);
-        } else {
-          reject(new Error('Failed to read file as ArrayBuffer'));
-        }
-      };
-      reader.onerror = () => {
-        reject(reader.error);
-      };
-      reader.readAsArrayBuffer(file);
-    });
-  }
-
   /**
    * Selects the appropriate import strategy based on the file extension.
    * 
@@ -188,11 +207,11 @@ export class ImportService {
     switch (extension) {
       case 'xlsx':
       case 'xls':
-        return new (require('./strategies/ExcelStrategy').ExcelStrategy)();
+        return new ExcelStrategy();
       case 'csv':
-        return new (require('./strategies/CsvStrategy').CsvStrategy)();
+        return new CsvStrategy();
       default:
-        throw new Error(`Unsupported file type: ${extension}. Supported types are: xlsx, xls, csv`);
+        throw new UnsupportedImportFileError('Tipo de arquivo não suportado. Envie um arquivo CSV, XLS ou XLSX.');
     }
   }
 }

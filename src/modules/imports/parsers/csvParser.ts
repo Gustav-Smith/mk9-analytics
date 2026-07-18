@@ -1,6 +1,6 @@
 import * as Papa from 'papaparse';
 
-export async function parseCsv(arrayBuffer: ArrayBuffer): Promise<any[]> {
+export async function parseCsv(arrayBuffer: ArrayBuffer): Promise<unknown[]> {
   return new Promise((resolve, reject) => {
     try {
       const decoder = new TextDecoder('utf-8');
