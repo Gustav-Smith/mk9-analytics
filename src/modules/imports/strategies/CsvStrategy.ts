@@ -2,6 +2,7 @@ import { prisma } from '../../../lib/prisma';
 import { SpreadsheetType } from '../types/SpreadsheetType';
 import { ImportStrategy } from '../types/ImportStrategy';
 import { parseCsv } from '../parsers/csvParser';
+import { SOURCE_ROW_NUMBER } from '../types/ImportPreview';
 import type { ImportValidationError, NormalizedImportRow } from '../types/ImportPreview';
 import type { StrategyPreview } from '../types/ImportStrategy';
 import { validatePreviewRows } from '../services/validate-preview-rows';
@@ -52,11 +53,12 @@ export class CsvStrategy implements ImportStrategy {
     const headers = (rawData[0] as unknown[]).map((header) => String(header ?? ''));
     const dataRows = rawData.slice(1) as unknown[][];
 
-    return dataRows.map((row) => {
+    return dataRows.map((row, rowIndex) => {
       const obj: NormalizedImportRow = {};
       headers.forEach((header, index) => {
         obj[header] = row[index];
       });
+      obj[SOURCE_ROW_NUMBER] = rowIndex + 2;
       return obj;
     });
   }

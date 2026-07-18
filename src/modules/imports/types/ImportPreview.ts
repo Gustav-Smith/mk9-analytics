@@ -1,7 +1,11 @@
 // src/modules/imports/types/ImportPreview.ts
 import { SpreadsheetType } from './SpreadsheetType';
 
-export type NormalizedImportRow = Record<string, unknown>;
+export const SOURCE_ROW_NUMBER: unique symbol = Symbol('import.sourceRowNumber');
+
+export type NormalizedImportRow = Record<string, unknown> & {
+  [SOURCE_ROW_NUMBER]?: number;
+};
 
 export interface ImportValidationError {
   row: number;

@@ -1,3 +1,4 @@
+import { SOURCE_ROW_NUMBER } from '../types/ImportPreview';
 import type { ImportValidationError, NormalizedImportRow } from '../types/ImportPreview';
 
 const REQUIRED_ROUTE_FIELDS = ['INDUSTRIA', 'LOJA', 'UF'] as const;
@@ -24,7 +25,7 @@ export function validatePreviewRows(normalizedData: NormalizedImportRow[]): {
   const errors: ImportValidationError[] = [];
 
   normalizedData.forEach((data, index) => {
-    const row = index + 1;
+    const row = data[SOURCE_ROW_NUMBER] ?? index + 1;
     const rowErrors: ImportValidationError[] = [];
 
     if (Object.keys(data).length === 0) {

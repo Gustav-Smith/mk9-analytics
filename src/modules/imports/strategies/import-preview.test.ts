@@ -5,6 +5,7 @@ import { CsvStrategy } from './CsvStrategy';
 import { ExcelStrategy } from './ExcelStrategy';
 import { SpreadsheetType } from '../types/SpreadsheetType';
 import type { ImportStrategy } from '../types/ImportStrategy';
+import { SOURCE_ROW_NUMBER } from '../types/ImportPreview';
 
 function createWorkbook(rows: unknown[][]): ArrayBuffer {
   const workbook = XLSX.utils.book_new();
@@ -143,4 +144,47 @@ test('linha vazia de roteiro continua ignorada', async () => {
   const result = await createPreview(new ExcelStrategy(), createWorkbook([ROUTE_HEADERS, ['Indústria A', 'Loja A', 'DF', 1], []]));
   assert.equal(result.normalizedData.length, 1);
   assert.equal(result.valid.length, 1);
+});
+
+test('XLSX com cabeçalho na linha 1 informa a linha física 2', async () => {
+  const result = await validateRouteRow([null, 'Loja A', 'DF', 1]);
+  assert.equal(result.errors[0].row, 2);
+});
+
+test('XLSX com cabeçalho na linha 6 informa a linha física 7', async () => {
+  const result = await createPreview(new ExcelStrategy(), createWorkbook([
+    [''],
+    [],
+    ['Relatório'],
+    ['Referência'],
+    ['SEG', 'TER'],
+    ROUTE_HEADERS,
+    [null, 'Loja A', 'DF', 1],
+  ]));
+  assert.equal(result.errors[0].row, 7);
+});
+
+test('XLSX informa a linha física de um erro posterior', async () => {
+  const result = await createPreview(new ExcelStrategy(), createWorkbook([
+    ROUTE_HEADERS,
+    ['Indústria A', 'Loja A', 'DF', 1],
+    ['Indústria B', null, 'DF', 1],
+  ]));
+  assert.equal(result.errors[0].row, 3);
+});
+
+test('CSV informa a linha física 2 para o primeiro registro', async () => {
+  const csv = new TextEncoder().encode(
+    'INDUSTRIA,LOJA,UF,VISITA_SEMANAL,VISITA_MENSAL\n,Loja A,DF,1,\n',
+  ).buffer;
+  const result = await createPreview(new CsvStrategy(), csv);
+  assert.equal(result.errors[0].row, 2);
+});
+
+test('identificador interno não aparece nas colunas nem no JSON do preview', async () => {
+  const result = await validateRouteRow(['Indústria A', 'Loja A', 'DF', 1]);
+  const previewRow = result.preview.previewData[0];
+  assert.equal(previewRow[SOURCE_ROW_NUMBER], 2);
+  assert.equal(Object.keys(previewRow).includes('SOURCE_ROW_NUMBER'), false);
+  assert.equal(JSON.stringify(previewRow).includes('sourceRowNumber'), false);
 });

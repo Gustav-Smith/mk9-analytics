@@ -2,6 +2,7 @@ import { prisma } from '../../../lib/prisma';
 import { SpreadsheetType } from '../types/SpreadsheetType';
 import { ImportStrategy } from '../types/ImportStrategy';
 import { ExcelReaderService } from '../services/ExcelReaderService';
+import { SOURCE_ROW_NUMBER } from '../types/ImportPreview';
 import type { ImportValidationError, NormalizedImportRow } from '../types/ImportPreview';
 import type { StrategyPreview } from '../types/ImportStrategy';
 import { validatePreviewRows } from '../services/validate-preview-rows';
@@ -98,15 +99,19 @@ export class ExcelStrategy implements ImportStrategy {
     const headerRowIndex = this.findHeaderRowIndex(rawData);
     const headerRow = Array.isArray(rawData[headerRowIndex]) ? rawData[headerRowIndex] : [];
     const headers = this.normalizeHeaders(headerRow);
-    const dataRows = rawData
-      .slice(headerRowIndex + 1)
-      .filter((row): row is unknown[] => Array.isArray(row) && row.some((value) => this.isFilled(value)));
+    const dataRows: Array<{ row: unknown[]; sourceRow: number }> = [];
+    rawData.slice(headerRowIndex + 1).forEach((row, index) => {
+      if (Array.isArray(row) && row.some((value) => this.isFilled(value))) {
+        dataRows.push({ row, sourceRow: headerRowIndex + index + 2 });
+      }
+    });
 
-    return dataRows.map((row) => {
+    return dataRows.map(({ row, sourceRow }) => {
       const obj: NormalizedImportRow = {};
       headers.forEach((header, index) => {
         obj[header] = row[index];
       });
+      obj[SOURCE_ROW_NUMBER] = sourceRow;
       return obj;
     });
   }
