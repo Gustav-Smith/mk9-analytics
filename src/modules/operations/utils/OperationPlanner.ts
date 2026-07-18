@@ -1,4 +1,4 @@
-import { Operation, Promoter, Store, Industry, Visit, VisitStatus } from '@prisma/client';
+import { Operation, Promoter, Store, Industry, Visit, VisitStatus, OperationStatus } from '@prisma/client';
 
 /**
  * OperationPlanner is responsible for generating visits for an operation based on
@@ -59,8 +59,8 @@ export class OperationPlanner {
     existingVisits: Visit[]
   ) {
     // Validate operation status
-    if (operation.status !== 'PLANNING') {
-      throw new Error('Can only generate visits for operations in PLANNING status');
+    if (operation.status !== OperationStatus.OPEN) {
+      throw new Error('Can only generate visits for operations in OPEN status');
     }
 
     // Get first and last day of the month

@@ -1,25 +1,29 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { operationService } from '@/modules/operations/services/OperationService';
+import { storeService } from '@/modules/stores/services/StoreService';
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const statusParam = searchParams.get('status') || undefined; // Convert null to undefined
-    const searchParam = searchParams.get('search') || undefined; // Convert null to undefined
+    const searchParam = searchParams.get('search') || undefined;
+    const chainParam = searchParams.get('chain') || undefined;
+    const cityParam = searchParams.get('city') || undefined;
+    const stateParam = searchParams.get('state') || undefined;
 
-    const operations = await operationService.getOperations({
+    const stores = await storeService.getStores({
       page,
       limit,
-      status: statusParam,
       search: searchParam,
+      chain: chainParam,
+      city: cityParam,
+      state: stateParam,
     });
 
-    return NextResponse.json(operations);
+    return NextResponse.json(stores);
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || 'Failed to fetch operations' },
+      { error: error.message || 'Failed to fetch stores' },
       { status: error.status || 500 }
     );
   }
@@ -29,12 +33,12 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json();
 
-    const operation = await operationService.createOperation(data);
+    const store = await storeService.createStore(data);
 
-    return NextResponse.json(operation, { status: 201 });
+    return NextResponse.json(store, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || 'Failed to create operation' },
+      { error: error.message || 'Failed to create store' },
       { status: error.status || 400 }
     );
   }
@@ -44,22 +48,22 @@ export async function PUT(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    
+
     if (!id) {
       return NextResponse.json(
-        { error: 'Operation ID is required' },
+        { error: 'Store ID is required' },
         { status: 400 }
       );
     }
 
     const data = await request.json();
 
-    const operation = await operationService.updateOperation(id, data);
+    const store = await storeService.updateStore(id, data);
 
-    return NextResponse.json(operation);
+    return NextResponse.json(store);
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || 'Failed to update operation' },
+      { error: error.message || 'Failed to update store' },
       { status: error.status || 400 }
     );
   }
@@ -69,24 +73,23 @@ export async function DELETE(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    
+
     if (!id) {
       return NextResponse.json(
-        { error: 'Operation ID is required' },
+        { error: 'Store ID is required' },
         { status: 400 }
       );
     }
 
-    const result = await operationService.deleteOperation(id);
+    const result = await storeService.deleteStore(id);
 
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json(
-      { error: error.message || 'Failed to delete operation' },
+      { error: error.message || 'Failed to delete store' },
       { status: error.status || 400 }
     );
   }
 }
 
-// Additional operation-specific endpoints
 export const dynamic = 'force-dynamic';

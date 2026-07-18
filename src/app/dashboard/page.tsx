@@ -45,10 +45,9 @@ export default async function DashboardPage() {
             <p><strong>Mês/Ano:</strong> {String(dashboardData.currentOperation.month).padStart(2, '0')}/{dashboardData.currentOperation.year}</p>
             <p><strong>Status:</strong> 
               <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                ${dashboardData.currentOperation.status === 'PLANNING' ? 'bg-blue-100 text-blue-800' :
-                  dashboardData.currentOperation.status === 'OPEN' ? 'bg-green-100 text-green-800' :
-                  dashboardData.currentOperation.status === 'IN_PROGRESS' ? 'bg-yellow-100 text-yellow-800' :
-                  dashboardData.currentOperation.status === 'FINISHED' ? 'bg-indigo-100 text-indigo-800' :
+                ${dashboardData.currentOperation.status === 'OPEN' ? 'bg-green-100 text-green-800' : 
+                  dashboardData.currentOperation.status === 'CLOSED' ? 'bg-yellow-100 text-yellow-800' : 
+                  dashboardData.currentOperation.status === 'ARCHIVED' ? 'bg-blue-100 text-blue-800' : 
                   'bg-gray-100 text-gray-800'}`}>
                 {dashboardData.currentOperation.status}
               </span>
@@ -74,10 +73,10 @@ export default async function DashboardPage() {
         </div>
 
         {/* Industries */}
-        <div className="bg-white rounded-lg shadow p-6">
-          <h3 className="text-lg font-semibold mb-3">Indústrias</h3>
-          <p className="text-3xl font-bold text-purple-600">{dashboardData.industries}</p>
-        </div>
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-lg font-semibold mb-3">Indústrias</h3>
+                  <p className="text-3xl font-bold text-blue-600">{dashboardData.industries}</p>
+                </div>
 
         {/* Conflicts */}
         <div className="bg-white rounded-lg shadow p-6">

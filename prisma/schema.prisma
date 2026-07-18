@@ -105,11 +105,8 @@ model Visit {
 }
 
 enum OperationStatus {
-  PLANNING
   OPEN
-  IN_PROGRESS
-  FINISHED
-  CANCELLED
+  CLOSED
   ARCHIVED
 }
 
@@ -118,7 +115,7 @@ model Operation {
   name      String
   month     Int
   year      Int
-  status    OperationStatus @default(PLANNING)
+  status    OperationStatus @default(OPEN)
   description String?
   clientId  String?
   observations String?

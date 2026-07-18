@@ -63,10 +63,10 @@ export function validateMonthYearDates(
   startsAt: Date,
   endsAt: Date
 ): boolean {
-  const startMonth = startsAt.getMonth() + 1;
-  const startYear = startsAt.getFullYear();
-  const endMonth = endsAt.getMonth() + 1;
-  const endYear = endsAt.getFullYear();
+  const startMonth = startsAt.getUTCMonth() + 1;
+  const startYear = startsAt.getUTCFullYear();
+  const endMonth = endsAt.getUTCMonth() + 1;
+  const endYear = endsAt.getUTCFullYear();
 
   return (
     startMonth === month &&
@@ -90,8 +90,8 @@ export function validateDatesInMonthYear(
   startsAt: Date,
   endsAt: Date
 ): boolean {
-  const startOfMonth = new Date(year, month - 1, 1);
-  const endOfMonth = new Date(year, month, 0, 23, 59, 59, 999);
+  const startOfMonth = new Date(Date.UTC(year, month - 1, 1));
+  const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
 
   return (
     startsAt >= startOfMonth &&

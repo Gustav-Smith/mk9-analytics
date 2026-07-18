@@ -83,10 +83,6 @@ export const operationService = {
       throw new Error('Operation dates must match the selected month and year');
     }
 
-    if (!validateDatesInMonthYear(validated.month, validated.year, validated.startsAt, validated.endsAt)) {
-      throw new Error('Operation dates must fall within the selected month and year');
-    }
-
     return prisma.operation.create({ data: validated });
   },
 
@@ -151,7 +147,7 @@ export const operationService = {
         name: source.name,
         month: newMonth,
         year: newYear,
-        status: OperationStatus.PLANNING,
+        status: OperationStatus.OPEN,
         description: source.description,
         clientId: source.clientId,
         observations: source.observations,
@@ -164,7 +160,7 @@ export const operationService = {
   async closeOperation(id: string) {
     return prisma.operation.update({
       where: { id },
-      data: { status: OperationStatus.FINISHED },
+      data: { status: OperationStatus.CLOSED },
     });
   },
 
@@ -242,40 +238,40 @@ export const operationService = {
 
     const frequencies = new Map<string, number>();
 
-    promoters.forEach((promoter) => {
-      stores.forEach((store) => {
-        industries.forEach((industry) => {
-          frequencies.set(`${promoter.id}-${store.id}-${industry.id}`, 1);
+        promoters.forEach((promoter) => {
+          stores.forEach((store) => {
+            industries.forEach((industry) => {
+              frequencies.set(`${promoter.id}-${store.id}-${industry.id}`, 1);
+            });
+          });
         });
-      });
-    });
 
-    const result = operationPlanner.generateVisits(
-      operation as any,
-      promoters,
-      stores,
-      industries,
-      frequencies,
-      existingVisits as any,
-    );
+        const result = await operationPlanner.generateVisits(
+          operation,
+          promoters,
+          stores,
+          industries,
+          frequencies,
+          existingVisits,
+        );
 
-    if (result.visitsToCreate.length === 0) {
-      return { success: true, created: 0, statistics: result.statistics };
-    }
+        if (result.visitsToCreate.length === 0) {
+          return { success: true, created: 0, statistics: result.statistics };
+        }
 
-    await prisma.visit.createMany({ data: result.visitsToCreate as any });
+        await prisma.visit.createMany({ data: result.visitsToCreate });
 
-    return {
-      success: true,
-      created: result.visitsToCreate.length,
-      statistics: result.statistics,
-    };
+        return {
+          success: true,
+          created: result.visitsToCreate.length,
+          statistics: result.statistics,
+        };
   },
 
   async getDashboardData() {
     const currentOperation = await prisma.operation.findFirst({
       where: {
-        status: { in: [OperationStatus.OPEN, OperationStatus.IN_PROGRESS] },
+        status: OperationStatus.OPEN,
       },
       orderBy: [{ year: 'desc' }, { month: 'desc' }],
     });
@@ -291,7 +287,6 @@ export const operationService = {
 
     const coverage = plannedVisits > 0 ? Math.round((realizedVisits / plannedVisits) * 100) : 0;
     const frequency = promoters > 0 ? Number((plannedVisits / promoters).toFixed(2)) : 0;
-    const conflicts = await prisma.visit.count({ where: { status: VisitStatus.CANCELADA } });
 
     return {
       currentOperation,
@@ -303,7 +298,7 @@ export const operationService = {
       pendencies: pendingVisits,
       coverage,
       frequency,
-      conflicts,
+      conflicts: await prisma.visit.count({ where: { status: VisitStatus.CANCELADA } }),
     };
   },
 
