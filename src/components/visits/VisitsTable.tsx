@@ -1,75 +1,12 @@
-import React from 'react';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { formatDatePtBr } from '@/lib/formatters';
 import type { VisitItem } from '@/modules/visits/dashboard/visits-dashboard.types';
 import { VisitStatusBadge } from './VisitStatusBadge';
-import { Image as ImageIcon, ClipboardCheck } from 'lucide-react';
 
-interface VisitsTableProps {
-  visits: VisitItem[];
+export function VisitsTable({ visits }: { visits: VisitItem[] }) {
+  if (visits.length === 0) return <EmptyState title="Nenhuma visita encontrada" description="Ajuste os filtros ou aguarde novos roteiros." />;
+  return <section className="min-w-0 max-w-full overflow-hidden rounded-md border border-[#deded9] bg-white"><div className="w-full overflow-x-auto"><table className="w-full min-w-[980px] table-fixed text-left text-xs"><thead><tr className="border-b border-[#e7e7e3] text-[#74746f]"><Th className="w-[12%]">Data planejada</Th><Th className="w-[15%]">Promotor</Th><Th className="w-[16%]">Loja</Th><Th className="w-[14%]">Indústria</Th><Th className="w-[16%]">Operação</Th><Th className="w-[10%]">Status</Th><Th>Foto</Th><Th>Checklist</Th></tr></thead><tbody className="divide-y divide-[#ecece8]">{visits.map((item) => <tr key={item.id} className="hover:bg-[#fafaf8]"><Td>{formatDatePtBr(item.scheduledDate)}</Td><Td strong title={item.promoterName}>{item.promoterName}</Td><Td title={item.storeName}>{item.storeName}</Td><Td title={item.industryName}>{item.industryName}</Td><Td title={item.operationName}>{item.operationName}</Td><Td><VisitStatusBadge status={item.status} /></Td><Td muted>Não disponível</Td><Td muted>Não disponível</Td></tr>)}</tbody></table></div></section>;
 }
-
-export const VisitsTable = ({ visits }: VisitsTableProps) => {
-  if (visits.length === 0) {
-    return (
-      <div className="bg-white border border-[#F4F4F5] rounded-2xl p-12 text-center shadow-xs">
-        <p className="text-gray-500 font-semibold text-xs">Nenhuma visita encontrada com os filtros aplicados.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-white border border-[#F4F4F5] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.01),_0_1px_2px_rgba(0,0,0,0.005)] overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-[#F4F4F5]">
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">Data Planejada</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">Promotor</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">Loja</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">Indústria</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">Operação</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">Status</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">Foto</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">Checklist</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#F4F4F5]">
-            {visits.map((item) => (
-              <tr key={item.id} className="hover:bg-[#FAFAFA] transition-colors duration-150">
-                <td className="px-5 py-4 text-xs font-bold text-[#09090B] font-mono whitespace-nowrap">{item.scheduledDate}</td>
-                <td className="px-5 py-4 text-xs font-bold text-[#3F3F46] whitespace-nowrap">{item.promoterName}</td>
-                <td className="px-5 py-4 text-xs font-semibold text-[#71717A] whitespace-nowrap">{item.storeName}</td>
-                <td className="px-5 py-4 text-xs font-semibold text-[#71717A] whitespace-nowrap">{item.industryName}</td>
-                <td className="px-5 py-4 text-xs font-semibold text-[#71717A] whitespace-nowrap">{item.operationName}</td>
-                <td className="px-5 py-4 whitespace-nowrap">
-                  <VisitStatusBadge status={item.status} />
-                </td>
-                <td className="px-5 py-4 whitespace-nowrap text-xs font-semibold text-[#71717A]">
-                  {item.fotoUrl ? (
-                    <span className="inline-flex items-center gap-1 text-[#3B82F6] font-bold hover:underline cursor-pointer">
-                      <ImageIcon className="w-3.5 h-3.5" />
-                      Visualizar
-                    </span>
-                  ) : (
-                    <span className="text-[#D4D4D8]">—</span>
-                  )}
-                </td>
-                <td className="px-5 py-4 whitespace-nowrap text-xs font-semibold text-[#71717A]">
-                  {item.status === 'REALIZADA' ? (
-                    <span className="inline-flex items-center gap-1 text-[#16A34A] font-bold">
-                      <ClipboardCheck className="w-3.5 h-3.5" />
-                      {item.checklistStatus}
-                    </span>
-                  ) : (
-                    <span className="text-[#D4D4D8]">—</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
+function Th({ children, className = '' }: { children: React.ReactNode; className?: string }) { return <th className={`px-3 py-3 font-medium first:pl-4 last:pr-4 ${className}`}>{children}</th>; }
+function Td({ children, strong = false, muted = false, title }: { children: React.ReactNode; strong?: boolean; muted?: boolean; title?: string }) { return <td title={title} className={`truncate px-3 py-3.5 first:pl-4 last:pr-4 ${strong ? 'font-medium text-[#292928]' : muted ? 'text-[#92928d]' : 'text-[#666661]'}`}>{children}</td>; }
 export default VisitsTable;

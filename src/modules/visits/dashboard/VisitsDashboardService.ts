@@ -19,14 +19,14 @@ export class VisitsDashboardService {
     const rawVisits = await VisitsDashboardRepository.getVisitsList();
 
     const visits: VisitItem[] = rawVisits.map((v) => {
-      const promoterName = v.promoter?.name || 'N/A';
-      const supervisorName = v.promoter?.supervisor?.name || 'N/A';
-      const operationName = v.operation?.name || 'N/A';
-      const industryName = v.industry?.name || 'N/A';
-      const storeName = v.store?.name || 'N/A';
+      const promoterName = v.promoter?.name || 'Não disponível';
+      const supervisorName = v.promoter?.supervisor?.name || 'Não disponível';
+      const operationName = v.operation?.name || 'Não disponível';
+      const industryName = v.industry?.name || 'Não disponível';
+      const storeName = v.store?.name || 'Não disponível';
 
-      const fotoUrl = v.status === 'REALIZADA' ? '/images/photo-placeholder.jpg' : null;
-      const checklistStatus = v.status === 'REALIZADA' ? '4/4 itens (Preenchido)' : '—';
+      const fotoUrl = null;
+      const checklistStatus = 'Não disponível';
 
       return {
         id: v.id,

@@ -8,21 +8,15 @@ interface VisitStatusBadgeProps {
 export const VisitStatusBadge = ({ status }: VisitStatusBadgeProps) => {
   const styles: Record<VisitStatus, { bg: string; border: string; text: string; label: string }> = {
     PLANEJADA: {
-      bg: 'bg-[#EFF6FF]',
-      border: 'border-[#DBEAFE]',
-      text: 'text-[#3B82F6]',
+      bg: 'bg-[#f7fbff]', border: 'border-[#cddbeb]', text: 'text-[#356694]',
       label: 'Planejada',
     },
     REALIZADA: {
-      bg: 'bg-[#F0FDF4]',
-      border: 'border-[#DCFCE7]',
-      text: 'text-[#16A34A]',
+      bg: 'bg-[#f7fcf8]', border: 'border-[#cde2d3]', text: 'text-[#2f7445]',
       label: 'Realizada',
     },
     CANCELADA: {
-      bg: 'bg-[#FEF2F2]',
-      border: 'border-[#FEE2E2]',
-      text: 'text-[#EF4444]',
+      bg: 'bg-[#fff8f8]', border: 'border-[#ead0d0]', text: 'text-[#a53737]',
       label: 'Cancelada',
     },
   };
@@ -35,7 +29,7 @@ export const VisitStatusBadge = ({ status }: VisitStatusBadgeProps) => {
   };
 
   return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-lg text-[9px] font-bold uppercase tracking-wider border ${current.bg} ${current.border} ${current.text}`}>
+    <span className={`inline-flex items-center rounded-sm border px-2 py-0.5 text-[10px] font-medium ${current.bg} ${current.border} ${current.text}`}>
       {current.label}
     </span>
   );

@@ -1,134 +1,15 @@
-import React from 'react';
-import { Filter } from 'lucide-react';
+interface VisitsFiltersProps { promoter?: string; supervisor?: string; operation?: string; status?: string; startDate?: string; endDate?: string; uniquePromoters: string[]; uniqueSupervisors: string[]; uniqueOperations: string[] }
 
-interface VisitsFiltersProps {
-  promoter?: string;
-  supervisor?: string;
-  operation?: string;
-  status?: string;
-  startDate?: string;
-  endDate?: string;
-  uniquePromoters: string[];
-  uniqueSupervisors: string[];
-  uniqueOperations: string[];
+export function VisitsFilters({ promoter = '', supervisor = '', operation = '', status = '', startDate = '', endDate = '', uniquePromoters, uniqueSupervisors, uniqueOperations }: VisitsFiltersProps) {
+  const field = 'h-9 min-w-0 w-full rounded-md border border-[#d9d9d4] bg-white px-3 text-xs text-[#393937] outline-none focus:border-[#999994]';
+  return <details className="rounded-md border border-[#deded9] bg-white" open={Boolean(promoter || supervisor || operation || status || startDate || endDate)}><summary className="cursor-pointer select-none px-4 py-3 text-xs font-medium text-[#4f4f4b]">Filtros de visitas</summary><form method="GET" action="/dashboard/visitas" className="grid gap-3 border-t border-[#e7e7e3] p-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+    <Field label="Promotor"><select name="promoter" defaultValue={promoter} className={field}><option value="">Todos</option>{uniquePromoters.map((item) => <option key={item}>{item}</option>)}</select></Field>
+    <Field label="Supervisor"><select name="supervisor" defaultValue={supervisor} className={field}><option value="">Todos</option>{uniqueSupervisors.map((item) => <option key={item}>{item}</option>)}</select></Field>
+    <Field label="Operação"><select name="operation" defaultValue={operation} className={field}><option value="">Todas</option>{uniqueOperations.map((item) => <option key={item}>{item}</option>)}</select></Field>
+    <Field label="Status"><select name="status" defaultValue={status} className={field}><option value="">Todos</option><option value="PLANEJADA">Planejada</option><option value="REALIZADA">Realizada</option><option value="CANCELADA">Cancelada</option></select></Field>
+    <Field label="Início"><input type="date" name="startDate" defaultValue={startDate} className={field} /></Field><Field label="Fim"><input type="date" name="endDate" defaultValue={endDate} className={field} /></Field>
+    <div className="flex gap-2 sm:col-span-2 lg:col-span-3 xl:col-span-6 xl:justify-end"><a href="/dashboard/visitas" className="flex h-9 items-center rounded-md border border-[#d9d9d4] px-3 text-xs text-[#62625e]">Limpar</a><button className="h-9 rounded-md bg-[#20201f] px-4 text-xs font-medium text-white">Aplicar filtros</button></div>
+  </form></details>;
 }
-
-export const VisitsFilters = ({
-  promoter = '',
-  supervisor = '',
-  operation = '',
-  status = '',
-  startDate = '',
-  endDate = '',
-  uniquePromoters,
-  uniqueSupervisors,
-  uniqueOperations,
-}: VisitsFiltersProps) => {
-  return (
-    <form method="GET" action="/dashboard/visitas" className="bg-white border border-gray-100 rounded-2xl p-4 shadow-xs flex flex-col gap-4 mb-6">
-      <div className="flex items-center gap-2 pb-2 border-b border-gray-50">
-        <Filter className="w-4 h-4 text-blue-600" />
-        <span className="text-xs font-bold text-gray-700 uppercase tracking-wider">Filtros Avançados</span>
-      </div>
-
-      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 items-end">
-        {/* Promotor */}
-        <div className="space-y-1">
-          <label className="text-xs text-gray-400 font-semibold">Promotor</label>
-          <select
-            name="promoter"
-            defaultValue={promoter}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 animate-fadeIn"
-          >
-            <option value="">Todos</option>
-            {uniquePromoters.map((p) => (
-              <option key={p} value={p}>{p}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Supervisor */}
-        <div className="space-y-1">
-          <label className="text-xs text-gray-400 font-semibold">Supervisor</label>
-          <select
-            name="supervisor"
-            defaultValue={supervisor}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Todos</option>
-            {uniqueSupervisors.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Operação */}
-        <div className="space-y-1">
-          <label className="text-xs text-gray-400 font-semibold">Operação</label>
-          <select
-            name="operation"
-            defaultValue={operation}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Todas</option>
-            {uniqueOperations.map((o) => (
-              <option key={o} value={o}>{o}</option>
-            ))}
-          </select>
-        </div>
-
-        {/* Status */}
-        <div className="space-y-1">
-          <label className="text-xs text-gray-400 font-semibold">Status</label>
-          <select
-            name="status"
-            defaultValue={status}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="">Todos</option>
-            <option value="PLANEJADA">Planejada</option>
-            <option value="REALIZADA">Realizada</option>
-            <option value="CANCELADA">Cancelada</option>
-          </select>
-        </div>
-
-        {/* Período Início */}
-        <div className="space-y-1">
-          <label className="text-xs text-gray-400 font-semibold">Início</label>
-          <input
-            type="date"
-            name="startDate"
-            defaultValue={startDate}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        {/* Período Fim */}
-        <div className="space-y-1">
-          <label className="text-xs text-gray-400 font-semibold">Fim</label>
-          <input
-            type="date"
-            name="endDate"
-            defaultValue={endDate}
-            className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-      </div>
-
-      <div className="flex justify-end gap-2 pt-2">
-        <a
-          href="/dashboard/visitas"
-          className="bg-gray-100 hover:bg-gray-200 text-gray-600 font-medium text-sm px-4 py-2 rounded-xl transition-colors text-center focus:outline-none focus:ring-2 focus:ring-gray-300"
-        >
-          Limpar Filtros
-        </a>
-        <button
-          type="submit"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm px-5 py-2 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          Aplicar Filtros
-        </button>
-      </div>
-    </form>
-  );
-};
+function Field({ label, children }: { label: string; children: React.ReactNode }) { return <label className="min-w-0 space-y-1.5"><span className="block text-[11px] text-[#73736f]">{label}</span>{children}</label>; }
+export default VisitsFilters;

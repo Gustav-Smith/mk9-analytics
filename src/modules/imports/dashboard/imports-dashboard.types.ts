@@ -1,4 +1,4 @@
-export type ImportStatus = 'SUCCESS' | 'FAILED' | 'PENDING' | 'EXPIRED' | 'CONFIRMED';
+export type ImportStatus = 'PROCESSING' | 'SUCCESS' | 'FAILED' | 'PENDING' | 'EXPIRED' | 'CONFIRMED';
 
 export interface ImportItem {
   id: string;

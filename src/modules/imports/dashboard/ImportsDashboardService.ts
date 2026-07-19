@@ -45,7 +45,7 @@ export class ImportsDashboardService {
 
       return {
         id: item.id,
-        nomeArquivo: file?.fileName || 'N/A',
+        nomeArquivo: file?.fileName || 'Arquivo não identificado',
         createdAt: item.createdAt.toLocaleString('pt-BR'),
         status,
         totalRows,

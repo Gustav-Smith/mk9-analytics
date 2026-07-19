@@ -106,10 +106,10 @@ export default function ImportCard({ onSuccess }: Props = {}) {
   if (preview) {
     return (
       <div className="space-y-6">
-        <div className="border rounded-lg p-4">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-semibold">Arquivo processado</h3>
-            <p className="text-sm text-gray-500 truncate" title={file?.name || ''}>
+        <div className="min-w-0 rounded-md border border-[#deded9] p-4">
+          <div className="mb-4 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h3 className="shrink-0 text-sm font-medium text-[#292928]">Arquivo processado</h3>
+            <p className="min-w-0 truncate text-xs text-[#73736f]" title={file?.name || ''}>
               {file?.name || 'Nenhum arquivo selecionado'} — {preview.totalRows} linhas, {preview.validRows} válidas, {preview.invalidRows} inválidas, {preview.duplicateRows} duplicadas
               {preview.sheets.length > 0 ? ' — Abas: ' + preview.sheets.join(', ') : ''}
               {preview.warnings.length > 0 ? ' — Avisos: ' + preview.warnings.join(' ') : ''}
@@ -117,7 +117,7 @@ export default function ImportCard({ onSuccess }: Props = {}) {
             </p>
             <button
               onClick={handleRemoveFile}
-              className="text-sm text-gray-500 hover:text-gray-700"
+              className="shrink-0 text-xs text-[#62625e] hover:text-[#20201f]"
             >
               Remover
             </button>
@@ -125,7 +125,7 @@ export default function ImportCard({ onSuccess }: Props = {}) {
           <PreviewTable columns={preview.columns} data={preview.sample} />
         </div>
 
-        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400"
+        <div className="cursor-pointer rounded-md border border-dashed border-[#cfcfca] p-6 text-center hover:border-[#999994]"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -144,7 +144,7 @@ export default function ImportCard({ onSuccess }: Props = {}) {
           }}>
             {loading ? (
               <div className="flex flex-col items-center space-y-4">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d9d9d4] border-b-[#356694]"></div>
                 <p className="text-sm text-gray-600">Processando arquivo...</p>
               </div>
             ) : error ? (
@@ -172,7 +172,7 @@ export default function ImportCard({ onSuccess }: Props = {}) {
   }
 
   return (
-    <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center cursor-pointer hover:border-gray-400"
+    <div className="cursor-pointer rounded-md border border-dashed border-[#cfcfca] p-8 text-center hover:border-[#999994]"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -191,7 +191,7 @@ export default function ImportCard({ onSuccess }: Props = {}) {
       }}>
         {loading ? (
           <div className="flex flex-col items-center space-y-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d9d9d4] border-b-[#356694]"></div>
             <p className="text-sm text-gray-600">Enviando arquivo...</p>
           </div>
         ) : error ? (

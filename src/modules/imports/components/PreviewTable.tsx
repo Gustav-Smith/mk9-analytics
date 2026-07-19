@@ -9,7 +9,7 @@ interface PreviewTableProps {
 export const PreviewTable = ({ columns, data }: PreviewTableProps) => {
   if (!data || data.length === 0) {
     return (
-      <div className="text-center py-4 text-gray-500">
+      <div className="py-6 text-center text-sm text-[#858580]">
         Nenhum dado para exibir
       </div>
     );
@@ -19,22 +19,22 @@ export const PreviewTable = ({ columns, data }: PreviewTableProps) => {
   const displayColumns = columns.length > 0 ? columns : Object.keys(data[0]);
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm text-left rtl:text-right text-muted-foreground">
+    <div className="w-full max-w-full overflow-x-auto">
+      <table className="min-w-max text-left text-xs text-[#666661]">
         <thead>
           <tr>
             {displayColumns.map((col) => (
-              <th key={col} scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th key={col} scope="col" className="px-3 py-3 text-left text-[10px] font-medium uppercase tracking-wider text-[#74746f]">
                 {col}
               </th>
             ))}
           </tr>
         </thead>
-        <tbody className="bg-white divide-y divide-gray-200">
+        <tbody className="divide-y divide-[#ecece8] bg-white">
           {data.map((row, index) => (
-            <tr key={index} className="hover:bg-gray-50">
+            <tr key={index} className="hover:bg-[#fafaf8]">
               {displayColumns.map((col) => (
-                <td key={col} className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td key={col} className="max-w-[260px] truncate whitespace-nowrap px-3 py-3 text-xs text-[#393937]">
                   {row[col] !== null && row[col] !== undefined ? String(row[col]) : '-'}
                 </td>
               ))}

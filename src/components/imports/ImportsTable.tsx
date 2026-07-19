@@ -1,66 +1,12 @@
-import React from 'react';
+import { EmptyState } from '@/components/ui/EmptyState';
+import { formatDatePtBr } from '@/lib/formatters';
 import type { ImportItem } from '@/modules/imports/dashboard/imports-dashboard.types';
 import { ImportStatusBadge } from './ImportStatusBadge';
 
-interface ImportsTableProps {
-  imports: ImportItem[];
+export function ImportsTable({ imports }: { imports: ImportItem[] }) {
+  if (imports.length === 0) return <EmptyState title="Nenhuma importação registrada" description="Use “Nova importação” para processar o primeiro arquivo." />;
+  return <section className="min-w-0 max-w-full overflow-hidden rounded-md border border-[#deded9] bg-white"><div className="w-full overflow-x-auto"><table className="w-full min-w-[820px] table-fixed text-left text-xs"><thead><tr className="border-b border-[#e7e7e3] text-[#74746f]"><Th className="w-[16%]">Data</Th><Th className="w-[27%]">Arquivo</Th><Th className="w-[12%]">Status</Th><Th>Total</Th><Th>Válidas</Th><Th>Inválidas</Th><Th>Duplicadas</Th><Th className="w-[16%]">Confirmação</Th></tr></thead><tbody className="divide-y divide-[#ecece8]">{imports.map((item) => <tr key={item.id} className="hover:bg-[#fafaf8]"><Td>{formatDatePtBr(item.createdAt, true)}</Td><Td strong title={item.nomeArquivo}>{item.nomeArquivo && item.nomeArquivo !== 'N/A' ? item.nomeArquivo : 'Arquivo não identificado'}</Td><Td><ImportStatusBadge status={item.status} /></Td><Td>{item.totalRows || '—'}</Td><Td success>{item.validRows || '—'}</Td><Td problem>{item.invalidRows || '—'}</Td><Td>{item.duplicateRows || '—'}</Td><Td>{formatDatePtBr(item.confirmedAt, true)}</Td></tr>)}</tbody></table></div></section>;
 }
-
-export const ImportsTable = ({ imports }: ImportsTableProps) => {
-  if (imports.length === 0) {
-    return (
-      <div className="bg-white border border-[#F4F4F5] rounded-2xl p-12 text-center shadow-xs">
-        <p className="text-gray-500 font-semibold text-xs">Nenhuma importação realizada até o momento.</p>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-white border border-[#F4F4F5] rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.01),_0_1px_2px_rgba(0,0,0,0.005)] overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="border-b border-[#F4F4F5]">
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">Data</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">Arquivo</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">Status</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider text-right">Total</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider text-right">Válidas</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider text-right">Inválidas</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider text-right">Duplicadas</th>
-              <th className="px-5 py-3.5 text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">Confirmada Em</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-[#F4F4F5]">
-            {imports.map((item) => (
-              <tr key={item.id} className="hover:bg-[#FAFAFA] transition-colors duration-150">
-                <td className="px-5 py-4 text-xs font-semibold text-[#3F3F46] whitespace-nowrap">{item.createdAt}</td>
-                <td className="px-5 py-4 text-xs font-bold text-[#09090B] font-mono whitespace-nowrap">{item.nomeArquivo}</td>
-                <td className="px-5 py-4 whitespace-nowrap">
-                  <ImportStatusBadge status={item.status} />
-                </td>
-                <td className="px-5 py-4 text-xs font-bold text-[#09090B] text-right whitespace-nowrap font-mono tabular-nums">
-                  {item.totalRows}
-                </td>
-                <td className="px-5 py-4 text-xs font-bold text-[#16A34A] text-right whitespace-nowrap font-mono tabular-nums">
-                  {item.validRows}
-                </td>
-                <td className="px-5 py-4 text-xs font-bold text-[#EF4444] text-right whitespace-nowrap font-mono tabular-nums">
-                  {item.invalidRows}
-                </td>
-                <td className="px-5 py-4 text-xs font-bold text-[#D97706] text-right whitespace-nowrap font-mono tabular-nums">
-                  {item.duplicateRows}
-                </td>
-                <td className="px-5 py-4 text-xs font-semibold text-[#71717A] whitespace-nowrap">
-                  {item.confirmedAt || <span className="text-[#D4D4D8]">—</span>}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-};
-
+function Th({ children, className = '' }: { children: React.ReactNode; className?: string }) { return <th className={`px-3 py-3 font-medium first:pl-4 last:pr-4 ${className}`}>{children}</th>; }
+function Td({ children, strong = false, success = false, problem = false, title }: { children: React.ReactNode; strong?: boolean; success?: boolean; problem?: boolean; title?: string }) { return <td title={title} className={`truncate px-3 py-3.5 first:pl-4 last:pr-4 ${strong ? 'font-medium text-[#292928]' : success ? 'font-medium text-[#2f7445]' : problem ? 'font-medium text-[#a53737]' : 'text-[#666661]'}`}>{children}</td>; }
 export default ImportsTable;

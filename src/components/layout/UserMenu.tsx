@@ -10,14 +10,14 @@ export const UserMenu = () => {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-1.5 hover:bg-gray-50 rounded-xl transition-colors focus:outline-none focus:ring-2 focus:ring-gray-150"
+        className="flex items-center gap-2 rounded-md p-1 transition-colors hover:bg-[#f3f3f0] focus:outline-none"
       >
-        <div className="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-sm">
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[#292928] text-[10px] font-semibold text-white">
           GS
         </div>
         <div className="hidden sm:flex flex-col text-left">
-          <span className="text-xs font-bold text-gray-800 leading-none">Gustav Smith</span>
-          <span className="text-[10px] text-gray-400 font-semibold mt-0.5">Administrador</span>
+          <span className="text-xs font-medium leading-none text-[#292928]">Gustav Smith</span>
+          <span className="mt-0.5 text-[10px] text-[#858580]">Administrador</span>
         </div>
         <ChevronDown className="w-4 h-4 text-gray-400 hidden sm:block" />
       </button>
@@ -25,7 +25,7 @@ export const UserMenu = () => {
       {isOpen && (
         <>
           <div className="fixed inset-0 z-10" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-100 rounded-2xl shadow-lg py-1.5 z-20 animate-fadeIn">
+          <div className="absolute right-0 z-20 mt-2 w-48 rounded-md border border-[#deded9] bg-white py-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)] animate-fadeIn">
             <button className="w-full flex items-center gap-2.5 px-4 py-2.5 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition-colors text-left">
               <User className="w-4 h-4 text-gray-400" />
               Perfil

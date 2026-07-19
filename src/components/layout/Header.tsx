@@ -1,49 +1,29 @@
-import React from 'react';
-import { Breadcrumb } from '@/components/layout/Breadcrumb';
-import { UserMenu } from '@/components/layout/UserMenu';
-import { Search, Menu } from 'lucide-react';
+import { Bell, Menu, Search } from 'lucide-react';
+import { Breadcrumb } from './Breadcrumb';
+import { UserMenu } from './UserMenu';
 
-interface HeaderProps {
-  onMenuToggle: () => void;
-}
+interface HeaderProps { onMenuToggle: () => void }
 
-export const Header = ({ onMenuToggle }: HeaderProps) => {
+export function Header({ onMenuToggle }: HeaderProps) {
+  const currentDate = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date());
+
   return (
-    <header className="h-14 border-b border-[#F4F4F5] bg-white/80 backdrop-blur-md px-6 flex items-center justify-between sticky top-0 z-30">
+    <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-[#e7e7e3] bg-white/95 px-4 backdrop-blur-md md:px-6">
       <div className="flex items-center gap-3">
-        <button
-          onClick={onMenuToggle}
-          className="lg:hidden p-1.5 hover:bg-[#F4F4F5] rounded-lg text-[#71717A] hover:text-[#09090B] transition-colors"
-        >
-          <Menu className="w-4 h-4" />
-        </button>
+        <button aria-label="Abrir menu" onClick={onMenuToggle} className="rounded-md p-1.5 text-[#73736f] hover:bg-[#f3f3f0] lg:hidden"><Menu className="h-4 w-4" /></button>
         <Breadcrumb />
       </div>
-
-      <div className="flex items-center gap-6">
-        {/* Telemetry Status Indicator */}
-        <div className="hidden lg:flex items-center gap-2 px-3 py-1 bg-[#F0FDF4] border border-[#DCFCE7] rounded-full">
-          <span className="relative flex h-1.5 w-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#16A34A] opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-[#16A34A]"></span>
-          </span>
-          <span className="text-[10px] font-bold text-[#16A34A] uppercase tracking-wider">Telemetria Ativa</span>
+      <div className="flex items-center gap-3">
+        <div className="relative hidden min-w-[210px] md:block lg:min-w-[260px]">
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#9b9b96]" />
+          <input type="search" aria-label="Buscar" placeholder="Buscar" className="w-full rounded-md border border-[#deded9] bg-[#fafaf9] py-1.5 pl-9 pr-4 text-xs text-[#1b1b1a] outline-none placeholder:text-[#9b9b96] focus:border-[#aaa9a4]" />
         </div>
-
-        {/* Search */}
-        <div className="relative hidden md:block min-w-[200px] lg:min-w-[240px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-[#A1A1AA]" />
-          <input
-            type="text"
-            placeholder="Buscar..."
-            className="w-full pl-9 pr-4 py-1.5 border border-[#E4E4E7] bg-white rounded-lg text-xs font-semibold placeholder-[#A1A1AA] text-[#09090B] focus:outline-none focus:border-[#A1A1AA] transition-all duration-150 shadow-[0_1px_2px_rgba(0,0,0,0.01)]"
-          />
-        </div>
-
+        <span className="hidden border-l border-[#e7e7e3] pl-3 text-xs text-[#73736f] xl:block">{currentDate}</span>
+        <button aria-label="Notificações" className="rounded-md p-2 text-[#73736f] hover:bg-[#f3f3f0] hover:text-[#1b1b1a]"><Bell className="h-4 w-4" /></button>
         <UserMenu />
       </div>
     </header>
   );
-};
+}
 
 export default Header;

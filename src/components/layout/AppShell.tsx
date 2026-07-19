@@ -13,7 +13,7 @@ export const AppShell = ({ children }: AppShellProps) => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="min-h-screen flex bg-gray-50/50">
+    <div className="min-h-screen flex bg-[#f7f7f5]">
       {/* Mobile Drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
@@ -21,7 +21,7 @@ export const AppShell = ({ children }: AppShellProps) => {
             className="fixed inset-0 bg-gray-900/40 backdrop-blur-xs transition-opacity duration-300"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="relative flex flex-col w-72 max-w-xs bg-white shadow-xl animate-slideRight">
+          <div className="relative flex flex-col w-64 max-w-xs bg-[#1b1b1a] shadow-xl animate-slideRight">
             <Sidebar
               collapsed={false}
               onToggleCollapse={() => {}}
@@ -34,7 +34,7 @@ export const AppShell = ({ children }: AppShellProps) => {
       {/* Desktop/Tablet Sidebar */}
       <aside
         className={`hidden lg:block shrink-0 transition-all duration-300 ${
-          collapsed ? 'w-20' : 'w-72'
+          collapsed ? 'w-16' : 'w-60'
         }`}
       >
         <div className="sticky top-0 h-screen">
@@ -49,7 +49,7 @@ export const AppShell = ({ children }: AppShellProps) => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         <Header onMenuToggle={() => setMobileOpen(true)} />
-        <main className="flex-1 overflow-y-auto">
+        <main className="flex-1 overflow-y-auto bg-[#f7f7f5]">
           {children}
         </main>
       </div>
