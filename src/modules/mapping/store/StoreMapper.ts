@@ -1,4 +1,5 @@
 import type { StoreCandidate } from './StoreCandidate';
+import { normalizeText, normalizeState } from '@/modules/shared/normalization';
 
 export interface StoreImportRow {
   CODIGO: string;
@@ -9,27 +10,20 @@ export interface StoreImportRow {
   BAIRRO?: string | null;
 }
 
-function normalizeString(value: unknown): string {
-  if (value === null || value === undefined) return '';
-  return String(value)
-    .trim()
-    .replace(/\s+/g, ' ');
-}
-
-function normalizeOptionalString(value: unknown): string | null {
-  const normalized = normalizeString(value);
-  return normalized === '' ? null : normalized;
+function normalizeOptional(value: string | null | undefined): string | null {
+  const result = normalizeText(value);
+  return result === '' ? null : result;
 }
 
 export class StoreMapper {
   static map(row: StoreImportRow): StoreCandidate {
-    // Apenas chaves canônicas da entrada previamente validada
-    const name = normalizeString(row.NOME).toUpperCase();
-    const code = normalizeString(row.CODIGO).toUpperCase();
-    const chain = normalizeOptionalString(row.REDE)?.toUpperCase() ?? null;
-    const city = normalizeString(row.CIDADE).toUpperCase();
-    const state = normalizeString(row.UF).toUpperCase();
-    const neighborhood = normalizeOptionalString(row.BAIRRO)?.toUpperCase() ?? null;
+    // Utiliza a biblioteca compartilhada de normalização
+    const name = normalizeText(row.NOME);
+    const code = normalizeText(row.CODIGO);
+    const chain = normalizeOptional(row.REDE);
+    const city = normalizeText(row.CIDADE);
+    const state = normalizeState(row.UF);
+    const neighborhood = normalizeOptional(row.BAIRRO);
 
     // Chave para futura deduplicação baseada no código único da loja
     const deduplicationKey = `CODE:${code}`;
