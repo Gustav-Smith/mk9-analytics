@@ -18,6 +18,7 @@ export const Breadcrumb = () => {
     stores: 'Lojas',
     industrias: 'Indústrias',
     configuracoes: 'Configurações',
+    imports: 'Nova Importação',
   };
 
   return (

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { PreviewTable } from './PreviewTable';
 import type { ImportPreview } from '../types/ImportPreview';
+import { UploadCloud, CheckCircle2, AlertCircle } from 'lucide-react';
 
 interface Props {
   /** Optional callback when upload succeeds */
@@ -106,18 +107,18 @@ export default function ImportCard({ onSuccess }: Props = {}) {
   if (preview) {
     return (
       <div className="space-y-6">
-        <div className="min-w-0 rounded-md border border-[#deded9] p-4">
+        <div className="min-w-0 rounded-xl border border-[#F4F4F5] p-4 bg-[#FAFAFA]">
           <div className="mb-4 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h3 className="shrink-0 text-sm font-medium text-[#292928]">Arquivo processado</h3>
-            <p className="min-w-0 truncate text-xs text-[#73736f]" title={file?.name || ''}>
-              {file?.name || 'Nenhum arquivo selecionado'} — {preview.totalRows} linhas, {preview.validRows} válidas, {preview.invalidRows} inválidas, {preview.duplicateRows} duplicadas
-              {preview.sheets.length > 0 ? ' — Abas: ' + preview.sheets.join(', ') : ''}
-              {preview.warnings.length > 0 ? ' — Avisos: ' + preview.warnings.join(' ') : ''}
-              {preview.errors.length > 0 ? ' — Erros: ' + preview.errors.map((item) => 'linha ' + item.row + ': ' + item.message).join(' ') : ''}
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#16A34A]" />
+              <h3 className="shrink-0 text-xs font-bold text-[#09090B] uppercase tracking-wider">Arquivo Processado</h3>
+            </div>
+            <p className="min-w-0 truncate text-xs font-mono text-[#71717A]" title={file?.name || ''}>
+              {file?.name || 'Nenhum arquivo selecionado'} — {preview.totalRows} linhas ({preview.validRows} válidas, {preview.invalidRows} inválidas)
             </p>
             <button
               onClick={handleRemoveFile}
-              className="shrink-0 text-xs text-[#62625e] hover:text-[#20201f]"
+              className="shrink-0 text-xs font-bold text-[#71717A] hover:text-[#09090B] uppercase tracking-wider transition-colors"
             >
               Remover
             </button>
@@ -125,7 +126,7 @@ export default function ImportCard({ onSuccess }: Props = {}) {
           <PreviewTable columns={preview.columns} data={preview.sample} />
         </div>
 
-        <div className="cursor-pointer rounded-md border border-dashed border-[#cfcfca] p-6 text-center hover:border-[#999994]"
+        <div className="cursor-pointer rounded-xl border border-dashed border-[#E4E4E7] p-6 text-center hover:border-[#A1A1AA] transition-colors"
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -143,25 +144,21 @@ export default function ImportCard({ onSuccess }: Props = {}) {
             }
           }}>
             {loading ? (
-              <div className="flex flex-col items-center space-y-4">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d9d9d4] border-b-[#356694]"></div>
-                <p className="text-sm text-gray-600">Processando arquivo...</p>
+              <div className="flex flex-col items-center space-y-3">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#E4E4E7] border-b-[#16A34A]"></div>
+                <p className="text-xs font-semibold text-[#71717A]">Processando arquivo...</p>
               </div>
             ) : error ? (
-              <div className="flex flex-col items-center space-y-4">
-                <svg className="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                <p className="text-sm text-red-600">{error}</p>
+              <div className="flex flex-col items-center space-y-2">
+                <AlertCircle className="h-6 w-6 text-[#EF4444]" />
+                <p className="text-xs font-semibold text-[#EF4444]">{error}</p>
               </div>
             ) : (
-              <div className="flex flex-col items-center space-y-4">
-                <svg className="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l4-4m0 0l4-4m-4 4h18" />
-                </svg>
-                <p className="text-sm text-gray-600">
+              <div className="flex flex-col items-center space-y-3">
+                <UploadCloud className="h-8 w-8 text-[#A1A1AA]" />
+                <p className="text-xs font-semibold text-[#3F3F46]">
                   Arraste e solte um arquivo CSV ou XLSX aqui<br />
-                  <span className="text-xs text-gray-500">ou clique para selecionar</span>
+                  <span className="text-[10px] text-[#A1A1AA] font-normal">ou clique para selecionar</span>
                 </p>
               </div>
             )}
@@ -172,7 +169,7 @@ export default function ImportCard({ onSuccess }: Props = {}) {
   }
 
   return (
-    <div className="cursor-pointer rounded-md border border-dashed border-[#cfcfca] p-8 text-center hover:border-[#999994]"
+    <div className="cursor-pointer rounded-xl border border-dashed border-[#E4E4E7] p-8 text-center hover:border-[#A1A1AA] transition-colors"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -190,25 +187,21 @@ export default function ImportCard({ onSuccess }: Props = {}) {
         }
       }}>
         {loading ? (
-          <div className="flex flex-col items-center space-y-4">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#d9d9d4] border-b-[#356694]"></div>
-            <p className="text-sm text-gray-600">Enviando arquivo...</p>
+          <div className="flex flex-col items-center space-y-3">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#E4E4E7] border-b-[#16A34A]"></div>
+            <p className="text-xs font-semibold text-[#71717A]">Enviando arquivo...</p>
           </div>
         ) : error ? (
-          <div className="flex flex-col items-center space-y-4">
-            <svg className="h-8 w-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="flex flex-col items-center space-y-2">
+            <AlertCircle className="h-6 w-6 text-[#EF4444]" />
+            <p className="text-xs font-semibold text-[#EF4444]">{error}</p>
           </div>
         ) : (
-          <div className="flex flex-col items-center space-y-4">
-            <svg className="h-10 w-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16l4-4m0 0l4-4m-4 4h18" />
-            </svg>
-            <p className="text-sm text-gray-600">
+          <div className="flex flex-col items-center space-y-3">
+            <UploadCloud className="h-8 w-8 text-[#A1A1AA]" />
+            <p className="text-xs font-semibold text-[#3F3F46]">
               Arraste e solte um arquivo CSV ou XLSX aqui<br />
-              <span className="text-xs text-gray-500">ou clique para selecionar</span>
+              <span className="text-[10px] text-[#A1A1AA] font-normal">ou clique para selecionar do computador</span>
             </p>
           </div>
         )}
